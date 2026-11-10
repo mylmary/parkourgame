@@ -139,20 +139,20 @@ function mathQuestion() {
 function makeChallenge(mode) {
   if(mode==='colour') {
     const target=pick(palettes);
-    return {mode,prompt:'Find the '+target.name+' tiles!',hint:'Move onto any tile showing '+target.name+'.',answer:target.name,options:shuffle(palettes.slice(0,4).map(p=>p.name)),colors:Object.fromEntries(palettes.map(p=>[p.name,p.hex]))};
+    return {mode,prompt:'Find the '+target.name+' tiles!',hint:'Move onto any tile showing '+target.name+'.',answer:target.name,options:shuffle([target.name,...shuffle(palettes.filter(p=>p.name!==target.name).map(p=>p.name)).slice(0,3)]),colors:Object.fromEntries(palettes.map(p=>[p.name,p.hex]))};
   }
   if(mode==='math') return {mode,...mathQuestion()};
   if(mode==='animal') {
     const target=pick(animals);
-    return {mode,prompt:'Find the '+target.n+'!',hint:'Look for the matching animal picture.',answer:target.n,options:shuffle(animals.slice(0,4).map(a=>a.n)),icons:Object.fromEntries(animals.map(a=>[a.n,a.e]))};
+    return {mode,prompt:'Find the '+target.n+'!',hint:'Look for the matching animal picture.',answer:target.n,options:shuffle([target.n,...shuffle(animals.filter(a=>a.n!==target.n).map(a=>a.n)).slice(0,3)]),icons:Object.fromEntries(animals.map(a=>[a.n,a.e]))};
   }
   if(mode==='word') {
     const target=pick(words);
-    return {mode,prompt:'Find the word '+target.n+'!',hint:'Read the words on the floor and choose the match.',answer:target.n,options:shuffle(words.slice(0,4).map(w=>w.n))};
+    return {mode,prompt:'Find the word '+target.n+'!',hint:'Read the words on the floor and choose the match.',answer:target.n,options:shuffle([target.n,...shuffle(words.filter(w=>w.n!==target.n).map(w=>w.n)).slice(0,3)])};
   }
   if(mode==='shape') {
     const target=pick(shapes);
-    return {mode,prompt:'Find the '+target.n+' shape!',hint:'Match the shape shown on the tiles.',answer:target.n,options:shuffle(shapes.slice(0,4).map(s=>s.n)),icons:Object.fromEntries(shapes.map(s=>[s.n,s.e]))};
+    return {mode,prompt:'Find the '+target.n+' shape!',hint:'Match the shape shown on the tiles.',answer:target.n,options:shuffle([target.n,...shuffle(shapes.filter(s=>s.n!==target.n).map(s=>s.n)).slice(0,3)]),icons:Object.fromEntries(shapes.map(s=>[s.n,s.e]))};
   }
   if(mode==='memory') {
     const target=pick(['3','5','7','8','9']);
