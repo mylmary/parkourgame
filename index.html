@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#101b35">
+  <title>Brain Survival — Parkour Game</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}
+  </script>
+</head>
+<body>
+  <main id="game-shell">
+    <div id="game-root" aria-label="3D survival game arena"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Brain Survival home">
+        <span class="brand-mark">B</span>
+        <span>BRAIN <b>SURVIVAL</b></span>
+      </a>
+      <div class="top-stats">
+        <div class="stat"><small>ROUND</small><strong id="round-value">1</strong></div>
+        <div class="stat"><small>ALIVE</small><strong id="alive-value">16</strong></div>
+        <div class="stat timer-stat"><small>TILES FALL IN</small><strong id="timer-value">60</strong></div>
+      </div>
+      <button id="sound-button" class="icon-button" aria-label="Toggle sound">♪</button>
+    </header>
+
+    <section class="challenge-panel">
+      <div class="challenge-mode" id="mode-label">COLOUR RUSH</div>
+      <div class="challenge-prompt" id="challenge-prompt">Find the RED tiles!</div>
+      <div class="challenge-hint" id="challenge-hint">Move onto a red square before the countdown ends.</div>
+    </section>
+
+    <div class="round-message" id="round-message" aria-live="polite"></div>
+
+    <div class="bottom-hud">
+      <div class="control-help" id="control-help">WASD / ARROWS to move · SPACE to jump</div>
+      <div class="mode-chip" id="mode-chip">COLOUR RUSH</div>
+    </div>
+
+    <div class="mobile-controls" id="mobile-controls">
+      <div class="joystick-area" id="joystick-area"><div class="joystick" id="joystick"></div></div>
+      <button class="jump-button" id="jump-button">JUMP</button>
+    </div>
+
+    <section class="overlay" id="start-overlay">
+      <div class="modal start-modal">
+        <div class="eyebrow">THE LEARNING SURVIVAL GAME</div>
+        <h1>Think fast.<br><span>Stay on the tiles.</span></h1>
+        <p>Race against 15 AI competitors. Find the right answer before the floor disappears beneath everyone else.</p>
+        <div class="mode-picker">
+          <label for="mode-select">CHOOSE YOUR GAME MODE</label>
+          <select id="mode-select">
+            <option value="random">Surprise me — random modes</option>
+            <option value="colour">Colour Rush</option>
+            <option value="math">Math Madness</option>
+            <option value="animal">Animal Kingdom</option>
+            <option value="word">Word Challenge</option>
+            <option value="shape">Shape Shifter</option>
+            <option value="memory">Memory Rush</option>
+            <option value="odd">Odd One Out</option>
+            <option value="truefalse">True or False</option>
+            <option value="pattern">Pattern Panic</option>
+          </select>
+        </div>
+        <button id="start-button" class="primary-button">ENTER THE ARENA <span>→</span></button>
+        <div class="start-note">Single player · 15 AI opponents · 60 seconds per round</div>
+      </div>
+    </section>
+
+    <section class="overlay hidden" id="result-overlay">
+      <div class="modal result-modal">
+        <div class="eyebrow" id="result-eyebrow">ROUND COMPLETE</div>
+        <h2 id="result-title">You survived!</h2>
+        <p id="result-copy">The next challenge is ready.</p>
+        <div class="result-numbers">
+          <div><strong id="result-round">1</strong><small>ROUNDS</small></div>
+          <div><strong id="result-alive">1</strong><small>PLAYERS LEFT</small></div>
+        </div>
+        <button id="continue-button" class="primary-button">NEXT ROUND <span>→</span></button>
+      </div>
+    </section>
+
+    <div class="toast" id="toast" role="status"></div>
+  </main>
+  <script type="module" src="./game.js"></script>
+</body>
+</html>
