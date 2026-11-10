@@ -39,9 +39,9 @@ const tileLabels = [];
 const actors = [];
 const keys = new Set();
 const clock = new THREE.Clock();
-const player = { mesh: null, x: 0, z: 0, y: 0, vy: 0, alive: true, speed: 7.6, onGround: true, jumpQueued: false };
+const player = { mesh: null, x: 0, z: 0, y: 0, vy: 0, alive: true, speed: 4.8, onGround: true, jumpQueued: false };
 let round = 0, timeLeft = 5, phase = 'menu', selectedMode = 'random', activeMode = 'colour';
-let challenge = null, survivors = 16, soundOn = true, lastTime = 0, roundResolveTimer = 0;
+let challenge = null, survivors = 16, soundOn = true, lastTime = 0, roundResolveTimer = 0, betweenTimer = 0, playerName = 'Player';
 let joystickVector = { x: 0, y: 0 }, joystickPointer = null;
 const touchDirections = new Set();
 const npcNames = ['Milo','Zara','Kai','Luna','Theo','Mia','Leo','Nia','Ari','Ezra','Ivy','Noah','Ava','Finn','Remy'];
@@ -69,7 +69,7 @@ function makeLabel(text, color = '#17243a') {
 }
 function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 
-function makeActor(color, isPlayer = false) {
+function makeActor(color, isPlayer = false, displayName = '') {
   // Block-built avatar inspired by the familiar Roblox toy-like proportions.
   const group = new THREE.Group();
   const shirt = new THREE.MeshStandardMaterial({ color, roughness: .72 });
@@ -101,6 +101,15 @@ function makeActor(color, isPlayer = false) {
   if(isPlayer){
     const ring=new THREE.Mesh(new THREE.TorusGeometry(.48,.045,8,24),new THREE.MeshStandardMaterial({color:0x7ff0ba,emissive:0x174d38}));
     ring.rotation.x=Math.PI/2;ring.position.y=.035;group.add(ring);
+    const halo=new THREE.Mesh(new THREE.TorusGeometry(.34,.065,10,32),new THREE.MeshStandardMaterial({color:0xffd75e,emissive:0x9b650e,emissiveIntensity:.7,metalness:.55,roughness:.25}));
+    halo.position.y=2.22;halo.rotation.x=Math.PI/2;group.add(halo);
+    const nameCanvas=document.createElement('canvas');nameCanvas.width=512;nameCanvas.height=128;
+    const ctx=nameCanvas.getContext('2d');ctx.fillStyle='rgba(10,25,45,.84)';roundRect(ctx,8,8,496,112,28);ctx.fill();
+    ctx.strokeStyle='#ffd75e';ctx.lineWidth=5;roundRect(ctx,8,8,496,112,28);ctx.stroke();
+    ctx.fillStyle='#ffffff';ctx.font='900 48px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText((displayName||'PLAYER').toUpperCase(),256,65,450);
+    const tagTexture=new THREE.CanvasTexture(nameCanvas);tagTexture.colorSpace=THREE.SRGBColorSpace;
+    const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTexture,transparent:true,depthTest:false}));
+    tag.scale.set(1.8,.45,1);tag.position.y=2.72;group.add(tag);
   }
   group.userData.limbs=[leftArm,rightArm,leftLeg,rightLeg];
   group.traverse(o=>{if(o.isMesh)o.castShadow=true;});
@@ -233,7 +242,7 @@ function setupChallenge() {
 function spawnActors() {
   actors.forEach(a=>scene.remove(a.mesh));
   actors.length=0;
-  player.mesh=makeActor(0x17bd85,true); scene.add(player.mesh);
+  player.mesh=makeActor(0x17bd85,true,playerName); scene.add(player.mesh);
   player.x=0; player.z=HALF+0.5; player.y=0; player.vy=0; player.alive=true; player.onGround=true;
   for(let i=0;i<15;i++){
     const mesh=makeActor(npcColors[i]);
@@ -287,7 +296,7 @@ function showMessage(message) {
   clearTimeout(showMessage.timer); showMessage.timer=setTimeout(()=>el.classList.remove('show'),1500);
 }
 function updateHUD() {
-  $('round-value').textContent=round;
+  $('round-value').textContent=round+' / 10';
   $('alive-value').textContent=survivors;
   $('timer-value').textContent=Math.max(0,Math.ceil(timeLeft));
 }
@@ -299,16 +308,16 @@ function startRound(first=false) {
   else {
     player.x=0; player.z=HALF+.3; player.y=0; player.vy=0; player.alive=true;
     player.mesh.visible=true;
-    actors.forEach(a=>{a.alive=true;a.mesh.visible=true;a.x=(Math.random()-.5)*10;a.z=(Math.random()-.5)*10;a.target=null;});
+    actors.forEach(a=>{if(a.alive){a.mesh.visible=true;a.x=(Math.random()-.5)*10;a.z=(Math.random()-.5)*10;a.target=null;a.decision=0;}});
   }
-  survivors=16; timeLeft=5; phase='playing'; updateHUD();
+  survivors=(player.alive?1:0)+actors.filter(a=>a.alive).length; timeLeft=5; phase='playing'; updateHUD();
   $('result-overlay').classList.add('hidden');
   showMessage('ROUND '+round+' — GO!');
 }
 function dropWrongTiles() {
   phase='falling';
   const playerTile=nearestTile(player.x,player.z);
-  const playerSafe=playerTile&&playerTile.value===challenge.answer&&player.y<1.4;
+  const playerSafe=player.alive&&playerTile&&playerTile.value===challenge.answer&&player.y<1.4;
   let eliminated=0;
   for(const a of actors){
     if(!a.alive) continue;
@@ -316,35 +325,32 @@ function dropWrongTiles() {
     if(!t||t.value!==challenge.answer){a.alive=false;a.mesh.visible=false;eliminated++;}
   }
   if(!playerSafe){player.alive=false;player.mesh.visible=false;eliminated++;}
-  survivors=16-eliminated;
+  survivors=(player.alive?1:0)+actors.filter(a=>a.alive).length;
   tileMeshes.forEach(t=>{
     if(t.value!==challenge.answer){t.falling=true;t.mesh.userData.fallSpeed=0;t.edge.visible=false;}
     else {t.mesh.material.emissive.setHex(0x183d2d);}
   });
   updateHUD();
   showMessage(playerSafe?'SAFE TILE!':'YOU FELL!');
-  roundResolveTimer=2.8;
+  roundResolveTimer=2.2;
 }
 function resolveRound() {
-  if(!player.alive||survivors<=1){
+  const championNPC=actors.find(a=>a.alive);
+  if(!player.alive||survivors<=1||round>=10){
     phase='result';
-    $('result-eyebrow').textContent=player.alive?'ARENA COMPLETE':'GAME OVER';
-    $('result-title').textContent=player.alive?'YOU WIN!':'You were eliminated';
-    $('result-copy').textContent=player.alive?'You outlasted every competitor. Brilliant survival!':'Try a different strategy and see how many rounds you can survive.';
-    $('result-round').textContent=round;
+    const playerWon=player.alive&&(survivors===1||round>=10);
+    $('result-eyebrow').textContent=playerWon?'CHAMPION':'TOURNAMENT OVER';
+    $('result-title').textContent=playerWon?'🏆 '+playerName+' WINS!':(survivors===1&&championNPC?championNPC.name+' WINS!':'You were eliminated');
+    $('result-copy').textContent=playerWon?'You survived all 10 rounds and outlasted the competition!':(!player.alive?'Your run is over. The remaining competitors keep their places.':'The 10-round tournament has ended.');
+    $('result-round').textContent=round+' / 10';
     $('result-alive').textContent=survivors;
-    $('continue-button').textContent=player.alive?'PLAY AGAIN':'TRY AGAIN';
+    $('continue-button').textContent='PLAY AGAIN';
     $('result-overlay').classList.remove('hidden');
     return;
   }
   phase='between';
-  $('result-eyebrow').textContent='ROUND '+round+' COMPLETE';
-  $('result-title').textContent='You survived!';
-  $('result-copy').textContent=survivors+' competitors remain. Next round!';
-  $('result-round').textContent=round;
-  $('result-alive').textContent=survivors;
-  $('continue-button').textContent='NEXT ROUND';
-  $('result-overlay').classList.remove('hidden');
+  betweenTimer=1.15;
+  showMessage('ROUND '+round+' COMPLETE!');
 }
 function movePlayer(dt) {
   if(!player.alive||phase!=='playing') return;
@@ -404,13 +410,14 @@ document.querySelectorAll('.move-button').forEach(button=>{
 });
 $('start-button').addEventListener('click',()=>{
   selectedMode=$('mode-select').value;
+  playerName=($('player-name').value.trim()||'Player').slice(0,14);
   $('start-overlay').classList.add('hidden');
   if(document.documentElement.requestFullscreen){document.documentElement.requestFullscreen().catch(()=>{});}
   if(screen.orientation?.lock){screen.orientation.lock('landscape').catch(()=>{});}
   startRound(true);
 });
 $('continue-button').addEventListener('click',()=>{
-  if(phase==='result'){round=0;startRound(true);}
+  if(phase==='result'){round=0;player.alive=true;actors.forEach(a=>a.alive=true);startRound(true);}
   else startRound(false);
 });
 $('sound-button').addEventListener('click',()=>{
@@ -419,7 +426,10 @@ $('sound-button').addEventListener('click',()=>{
 function animate() {
   requestAnimationFrame(animate);
   const dt=Math.min(clock.getDelta(),.04);
-  if(phase==='playing'){
+  if(phase==='between'){
+    betweenTimer-=dt;
+    if(betweenTimer<=0) startRound(false);
+  } else if(phase==='playing'){
     timeLeft-=dt;
     movePlayer(dt);directNPCs(dt);updateHUD();
     if(timeLeft<=0){timeLeft=0;dropWrongTiles();}
