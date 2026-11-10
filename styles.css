@@ -48,10 +48,14 @@ button,select{font:inherit}
 .result-numbers strong,.result-numbers small{display:block}
 .result-numbers strong{font-size:30px;color:#83e9b7}
 .result-numbers small{font-size:9px;letter-spacing:.13em;color:#aabbd0}
-.mobile-controls{display:none;position:absolute;z-index:5;left:0;right:0;bottom:70px;align-items:flex-end;justify-content:space-between;padding:0 24px;pointer-events:none}
+.mobile-controls{display:none;position:absolute;z-index:5;left:0;right:0;bottom:22px;align-items:flex-end;justify-content:space-between;padding:0 22px;pointer-events:none}
 .joystick-area{position:relative;width:112px;height:112px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(9,18,37,.25);pointer-events:auto;touch-action:none}
 .joystick{position:absolute;left:50%;top:50%;width:48px;height:48px;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.3);border-radius:50%;background:rgba(255,255,255,.28);box-shadow:0 4px 14px rgba(0,0,0,.2)}
-.jump-button{width:70px;height:70px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(22,185,129,.8);color:#062a24;font-size:11px;font-weight:900;pointer-events:auto;touch-action:none}
+.jump-button{width:76px;height:76px;border:2px solid rgba(255,255,255,.65);border-radius:50%;background:#16b981;color:#062a24;font-size:11px;font-weight:900;pointer-events:auto;touch-action:none;box-shadow:0 5px 18px rgba(0,0,0,.28)}
+.dpad{width:150px;height:130px;display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,40px);gap:3px;justify-content:center;align-content:center;pointer-events:auto;touch-action:none}
+.move-button{border:1px solid rgba(255,255,255,.6);border-radius:10px;background:rgba(18,34,60,.86);color:#fff;font-size:18px;font-weight:900;touch-action:none;user-select:none;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.move-up{grid-column:2;grid-row:1}.move-left{grid-column:1;grid-row:2}.move-down{grid-column:2;grid-row:2}.move-right{grid-column:3;grid-row:2}
+@media (orientation:portrait) and (max-width:900px){#game-shell{position:fixed;top:0;left:0;width:100dvh;height:100vw;min-height:0;transform-origin:top left;transform:rotate(90deg) translateY(-100%)}.mobile-controls{bottom:12px}.challenge-panel{top:60px;width:min(380px,55%);padding:8px 12px}.challenge-prompt{font-size:22px}.topbar{padding:8px 14px}.bottom-hud{bottom:8px}}
 .toast{position:absolute;z-index:20;left:50%;bottom:22px;transform:translate(-50%,20px);padding:10px 16px;border-radius:10px;background:#fff;color:#13213a;font-size:12px;font-weight:800;opacity:0;transition:all .2s;pointer-events:none}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:700px){
@@ -60,4 +64,4 @@ button,select{font:inherit}
  .bottom-hud{bottom:12px;left:12px;right:12px}.control-help{font-size:9px}.mode-chip{display:none}
  .mobile-controls{display:flex}.modal{padding:25px 22px}.start-modal h1{font-size:42px}
 }
-@media(max-height:650px){.challenge-panel{top:65px}.mobile-controls{bottom:52px}.bottom-hud{bottom:8px}.modal{padding:22px}}
+@media(max-height:650px){.challenge-panel{top:65px}.mobile-controls{bottom:12px}.bottom-hud{bottom:8px}.modal{padding:22px}}
