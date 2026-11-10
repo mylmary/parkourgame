@@ -20,7 +20,7 @@
         <span>BRAIN <b>SURVIVAL</b></span>
       </a>
       <div class="top-stats">
-        <div class="stat"><small>ROUND</small><strong id="round-value">1</strong></div>
+        <div class="stat"><small>ROUND</small><strong id="round-value">1 / 10</strong></div>
         <div class="stat"><small>ALIVE</small><strong id="alive-value">16</strong></div>
         <div class="stat timer-stat"><small>TILES FALL IN</small><strong id="timer-value">5</strong></div>
       </div>
@@ -56,6 +56,10 @@
         <h1>Think fast.<br><span>Stay on the tiles.</span></h1>
         <p>Race against 15 AI competitors. Find the right answer before the floor disappears beneath everyone else.</p>
         <div class="mode-picker">
+          <label for="player-name">YOUR PLAYER NAME</label>
+          <input id="player-name" class="name-input" maxlength="14" placeholder="Enter your name" value="Player">
+        </div>
+        <div class="mode-picker">
           <label for="mode-select">CHOOSE YOUR GAME MODE</label>
           <select id="mode-select">
             <option value="random">Surprise me — random modes</option>
@@ -71,7 +75,7 @@
           </select>
         </div>
         <button id="start-button" class="primary-button">ENTER THE ARENA <span>→</span></button>
-        <div class="start-note">Single player · 15 AI opponents · 5 seconds per round</div>
+        <div class="start-note">1 player · 15 AI competitors · 10 rounds · 5 seconds each</div>
       </div>
     </section>
 
