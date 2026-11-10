@@ -214,8 +214,8 @@ function setupChallenge() {
   const promptEl=$('challenge-prompt');
   promptEl.textContent=challenge.prompt;
   $('challenge-hint').textContent='';
-  const promptColours=['#ff5b66','#ffd34f','#66c9ff','#a88aff','#6de0a5'];
-  promptEl.style.color=activeMode==='colour'?pick(promptColours):'#ffffff';
+  const contrastingText={RED:'#438fe8',BLUE:'#ffd34f',YELLOW:'#f45d65',GREEN:'#a88aff',PURPLE:'#ffd34f',ORANGE:'#438fe8'};
+  promptEl.style.color=activeMode==='colour'?(contrastingText[challenge.answer]||'#ffffff'):'#ffffff';
   const values=[];
   while(values.length<tileMeshes.length) values.push(challenge.options[values.length%challenge.options.length]);
   const shuffled=shuffle(values);
