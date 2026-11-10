@@ -40,9 +40,10 @@ const actors = [];
 const keys = new Set();
 const clock = new THREE.Clock();
 const player = { mesh: null, x: 0, z: 0, y: 0, vy: 0, alive: true, speed: 7.6, onGround: true, jumpQueued: false };
-let round = 0, timeLeft = 60, phase = 'menu', selectedMode = 'random', activeMode = 'colour';
+let round = 0, timeLeft = 5, phase = 'menu', selectedMode = 'random', activeMode = 'colour';
 let challenge = null, survivors = 16, soundOn = true, lastTime = 0, roundResolveTimer = 0;
 let joystickVector = { x: 0, y: 0 }, joystickPointer = null;
+const touchDirections = new Set();
 const npcNames = ['Milo','Zara','Kai','Luna','Theo','Mia','Leo','Nia','Ari','Ezra','Ivy','Noah','Ava','Finn','Remy'];
 const npcColors = [0xff776d,0xffbd4a,0x8c79ef,0x37c6a0,0x5aa8ef,0xe979b5,0xd1e45d,0xff8a45,0x63d7df,0xa0a8ff,0xe6a45c,0x65c48b,0xd78df0,0xf07158,0x7ca8dc];
 
@@ -69,22 +70,40 @@ function makeLabel(text, color = '#17243a') {
 function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 
 function makeActor(color, isPlayer = false) {
+  // Block-built avatar inspired by the familiar Roblox toy-like proportions.
   const group = new THREE.Group();
-  const bodyMat = new THREE.MeshStandardMaterial({ color, roughness: .68 });
-  const body = new THREE.Mesh(new THREE.CapsuleGeometry(.28, .55, 4, 8), bodyMat);
-  body.position.y = .64; body.castShadow = true; group.add(body);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(.24, 16, 12), new THREE.MeshStandardMaterial({ color: 0xffd3ae, roughness: .75 }));
-  head.position.y = 1.18; head.castShadow = true; group.add(head);
-  const eyeMat = new THREE.MeshStandardMaterial({ color: 0x17243a });
-  for (const x of [-.085,.085]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(.025, 8, 8), eyeMat);
-    eye.position.set(x,1.21,.205); group.add(eye);
+  const shirt = new THREE.MeshStandardMaterial({ color, roughness: .72 });
+  const skin = new THREE.MeshStandardMaterial({ color: 0xf2bd91, roughness: .82 });
+  const pants = new THREE.MeshStandardMaterial({ color: 0x263d68, roughness: .8 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x17243a });
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(.66,.72,.36), shirt);
+  torso.position.y=1.02; group.add(torso);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(.54,.54,.54), skin);
+  head.position.y=1.68; group.add(head);
+  const hair = new THREE.Mesh(new THREE.BoxGeometry(.56,.16,.56), new THREE.MeshStandardMaterial({color:pick([0x34271f,0x553624,0x171717,0x8c5b32])}));
+  hair.position.y=2.02; group.add(hair);
+  for(const x of [-.12,.12]){
+    const eye=new THREE.Mesh(new THREE.BoxGeometry(.055,.065,.025),dark);
+    eye.position.set(x,1.72,.285);group.add(eye);
   }
-  if (isPlayer) {
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(.38,.055,8,24), new THREE.MeshStandardMaterial({ color: 0x7ff0ba, emissive: 0x174d38 }));
-    ring.rotation.x = Math.PI/2; ring.position.y = .08; group.add(ring);
+  const leftArm=new THREE.Group(),rightArm=new THREE.Group();
+  leftArm.position.set(-.43,1.32,0);rightArm.position.set(.43,1.32,0);
+  for(const arm of [leftArm,rightArm]){
+    const limb=new THREE.Mesh(new THREE.BoxGeometry(.22,.62,.25),skin);
+    limb.position.y=-.30;arm.add(limb);group.add(arm);
   }
-  group.traverse(o => { if(o.isMesh) o.castShadow = true; });
+  const leftLeg=new THREE.Group(),rightLeg=new THREE.Group();
+  leftLeg.position.set(-.19,.67,0);rightLeg.position.set(.19,.67,0);
+  for(const leg of [leftLeg,rightLeg]){
+    const limb=new THREE.Mesh(new THREE.BoxGeometry(.27,.64,.3),pants);
+    limb.position.y=-.31;leg.add(limb);group.add(leg);
+  }
+  if(isPlayer){
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(.48,.045,8,24),new THREE.MeshStandardMaterial({color:0x7ff0ba,emissive:0x174d38}));
+    ring.rotation.x=Math.PI/2;ring.position.y=.035;group.add(ring);
+  }
+  group.userData.limbs=[leftArm,rightArm,leftLeg,rightLeg];
+  group.traverse(o=>{if(o.isMesh)o.castShadow=true;});
   return group;
 }
 
@@ -139,38 +158,38 @@ function mathQuestion() {
 function makeChallenge(mode) {
   if(mode==='colour') {
     const target=pick(palettes);
-    return {mode,prompt:'Find the '+target.name+' tiles!',hint:'Move onto any tile showing '+target.name+'.',answer:target.name,options:shuffle([target.name,...shuffle(palettes.filter(p=>p.name!==target.name).map(p=>p.name)).slice(0,3)]),colors:Object.fromEntries(palettes.map(p=>[p.name,p.hex]))};
+    return {mode,prompt:target.name,hint:'',answer:target.name,options:shuffle([target.name,...shuffle(palettes.filter(p=>p.name!==target.name).map(p=>p.name)).slice(0,3)]),colors:Object.fromEntries(palettes.map(p=>[p.name,p.hex]))};
   }
-  if(mode==='math') return {mode,...mathQuestion()};
+  if(mode==='math') const q=mathQuestion(); q.prompt=q.prompt.replace(' = ?',' = ?'); q.hint=''; return {mode,...q};
   if(mode==='animal') {
     const target=pick(animals);
-    return {mode,prompt:'Find the '+target.n+'!',hint:'Look for the matching animal picture.',answer:target.n,options:shuffle([target.n,...shuffle(animals.filter(a=>a.n!==target.n).map(a=>a.n)).slice(0,3)]),icons:Object.fromEntries(animals.map(a=>[a.n,a.e]))};
+    return {mode,prompt:target.n,hint:'',answer:target.n,options:shuffle([target.n,...shuffle(animals.filter(a=>a.n!==target.n).map(a=>a.n)).slice(0,3)]),icons:Object.fromEntries(animals.map(a=>[a.n,a.e]))};
   }
   if(mode==='word') {
     const target=pick(words);
-    return {mode,prompt:'Find the word '+target.n+'!',hint:'Read the words on the floor and choose the match.',answer:target.n,options:shuffle([target.n,...shuffle(words.filter(w=>w.n!==target.n).map(w=>w.n)).slice(0,3)])};
+    return {mode,prompt:target.n,hint:'',answer:target.n,options:shuffle([target.n,...shuffle(words.filter(w=>w.n!==target.n).map(w=>w.n)).slice(0,3)])};
   }
   if(mode==='shape') {
     const target=pick(shapes);
-    return {mode,prompt:'Find the '+target.n+' shape!',hint:'Match the shape shown on the tiles.',answer:target.n,options:shuffle([target.n,...shuffle(shapes.filter(s=>s.n!==target.n).map(s=>s.n)).slice(0,3)]),icons:Object.fromEntries(shapes.map(s=>[s.n,s.e]))};
+    return {mode,prompt:target.n,hint:'',answer:target.n,options:shuffle([target.n,...shuffle(shapes.filter(s=>s.n!==target.n).map(s=>s.n)).slice(0,3)]),icons:Object.fromEntries(shapes.map(s=>[s.n,s.e]))};
   }
   if(mode==='memory') {
     const target=pick(['3','5','7','8','9']);
-    return {mode,prompt:'Memory test: find number '+target+'!',hint:'Remember the number shown, then find it on the floor.',answer:target,options:shuffle(['2','3','5','7','8','9'].slice(0,4))};
+    return {mode,prompt:target,hint:'',answer:target,options:shuffle(['2','3','5','7','8','9'].slice(0,4))};
   }
   if(mode==='odd') {
     const target=pick(['FISH','BIRD','CAT','DOG']);
     const options=['APPLE','CAR','TREE',target];
-    return {mode,prompt:'Find the animal: '+target+'!',hint:'Only one of these tiles belongs to the animal group.',answer:target,options:shuffle(options)};
+    return {mode,prompt:target,hint:'',answer:target,options:shuffle(options)};
   }
   if(mode==='truefalse') {
     const a=2+Math.floor(Math.random()*9), b=2+Math.floor(Math.random()*9);
     const truth=Math.random()>.5, result=truth?a+b:a+b+pick([1,2,3]);
-    return {mode,prompt:a+' + '+b+' = '+result+'. Is it true?',hint:'Check the addition, then choose TRUE or FALSE.',answer:truth?'TRUE':'FALSE',options:['TRUE','FALSE']};
+    return {mode,prompt:a+' + '+b+' = '+result+'. Is it true?',hint:'',answer:truth?'TRUE':'FALSE',options:['TRUE','FALSE']};
   }
   const start=2+Math.floor(Math.random()*5), step=pick([2,3,4]);
   const answer=String(start+step*3);
-  return {mode,prompt:'Complete the pattern: '+start+', '+(start+step)+', '+(start+2*step)+', ?',hint:'Look at how much the numbers increase each time.',answer,options:shuffle([answer,String(start+step*2),String(start+step*4),String(start+step*3+1)])};
+  return {mode,prompt:'Complete the pattern: '+start+', '+(start+step)+', '+(start+2*step)+', ?',hint:'',answer,options:shuffle([answer,String(start+step*2),String(start+step*4),String(start+step*3+1)])};
 }
 const modeNames = {colour:'COLOUR RUSH',math:'MATH MADNESS',animal:'ANIMAL KINGDOM',word:'WORD CHALLENGE',shape:'SHAPE SHIFTER',memory:'MEMORY RUSH',odd:'ODD ONE OUT',truefalse:'TRUE OR FALSE',pattern:'PATTERN PANIC'};
 function chooseMode() {
@@ -192,8 +211,11 @@ function setupChallenge() {
   challenge=makeChallenge(activeMode);
   $('mode-label').textContent=modeNames[activeMode];
   $('mode-chip').textContent=modeNames[activeMode];
-  $('challenge-prompt').textContent=challenge.prompt;
-  $('challenge-hint').textContent=challenge.hint;
+  const promptEl=$('challenge-prompt');
+  promptEl.textContent=challenge.prompt;
+  $('challenge-hint').textContent='';
+  const promptColours=['#ff5b66','#ffd34f','#66c9ff','#a88aff','#6de0a5'];
+  promptEl.style.color=activeMode==='colour'?pick(promptColours):'#ffffff';
   const values=[];
   while(values.length<tileMeshes.length) values.push(challenge.options[values.length%challenge.options.length]);
   const shuffled=shuffle(values);
@@ -234,6 +256,13 @@ function chooseTarget() {
   if(!safe.length) return {x:0,z:0};
   return pick(safe);
 }
+function iSeed(x,z){return x*1.7+z*.9;}
+function animateAvatar(mesh,running,t){
+  const limbs=mesh.userData.limbs;if(!limbs)return;
+  const swing=running?Math.sin(t)*.62:0;
+  limbs[0].rotation.x=swing;limbs[1].rotation.x=-swing;
+  limbs[2].rotation.x=-swing;limbs[3].rotation.x=swing;
+}
 function directNPCs(dt) {
   for(const a of actors){
     if(!a.alive) continue;
@@ -243,8 +272,10 @@ function directNPCs(dt) {
     }
     const dx=a.target.x-a.x,dz=a.target.z-a.z,dist=Math.hypot(dx,dz);
     if(dist>.25){a.x+=dx/dist*a.speed*dt;a.z+=dz/dist*a.speed*dt;}
+    const running=dist>.25;
     a.mesh.position.set(a.x,Math.sin(performance.now()*.006+a.x)*.025,a.z);
     a.mesh.rotation.y=Math.atan2(dx,dz);
+    animateAvatar(a.mesh,running,performance.now()*.012+iSeed(a.x,a.z));
   }
 }
 function setToast(message) {
@@ -270,7 +301,7 @@ function startRound(first=false) {
     player.mesh.visible=true;
     actors.forEach(a=>{a.alive=true;a.mesh.visible=true;a.x=(Math.random()-.5)*10;a.z=(Math.random()-.5)*10;a.target=null;});
   }
-  survivors=16; timeLeft=60; phase='playing'; updateHUD();
+  survivors=16; timeLeft=5; phase='playing'; updateHUD();
   $('result-overlay').classList.add('hidden');
   showMessage('ROUND '+round+' — GO!');
 }
@@ -309,7 +340,7 @@ function resolveRound() {
   phase='between';
   $('result-eyebrow').textContent='ROUND '+round+' COMPLETE';
   $('result-title').textContent='You survived!';
-  $('result-copy').textContent=survivors+' competitors remain. Get ready for the next challenge.';
+  $('result-copy').textContent=survivors+' competitors remain. Next round!';
   $('result-round').textContent=round;
   $('result-alive').textContent=survivors;
   $('continue-button').textContent='NEXT ROUND';
@@ -318,10 +349,10 @@ function resolveRound() {
 function movePlayer(dt) {
   if(!player.alive||phase!=='playing') return;
   let x=0,z=0;
-  if(keys.has('KeyA')||keys.has('ArrowLeft')) x-=1;
-  if(keys.has('KeyD')||keys.has('ArrowRight')) x+=1;
-  if(keys.has('KeyW')||keys.has('ArrowUp')) z-=1;
-  if(keys.has('KeyS')||keys.has('ArrowDown')) z+=1;
+  if(keys.has('KeyA')||keys.has('ArrowLeft')||touchDirections.has('left')) x-=1;
+  if(keys.has('KeyD')||keys.has('ArrowRight')||touchDirections.has('right')) x+=1;
+  if(keys.has('KeyW')||keys.has('ArrowUp')||touchDirections.has('up')) z-=1;
+  if(keys.has('KeyS')||keys.has('ArrowDown')||touchDirections.has('down')) z+=1;
   x+=joystickVector.x; z+=joystickVector.y;
   const len=Math.hypot(x,z);
   if(len>1){x/=len;z/=len;}
@@ -334,6 +365,7 @@ function movePlayer(dt) {
   if(player.y<=0){player.y=0;player.vy=0;player.onGround=true;}
   player.mesh.position.set(player.x,player.y,player.z);
   if(len>.05) player.mesh.rotation.y=Math.atan2(x,z);
+  animateAvatar(player.mesh,len>.05,performance.now()*.014);
 }
 function updateFalling(dt) {
   tileMeshes.forEach(t=>{
@@ -361,21 +393,20 @@ window.addEventListener('keydown',e=>{
 });
 window.addEventListener('keyup',e=>keys.delete(e.code));
 $('jump-button').addEventListener('pointerdown',e=>{e.preventDefault();player.jumpQueued=true;});
-const joyArea=$('joystick-area'),joy=$('joystick');
-joyArea.addEventListener('pointerdown',e=>{joystickPointer=e.pointerId;joyArea.setPointerCapture(e.pointerId);moveJoy(e);});
-joyArea.addEventListener('pointermove',e=>{if(e.pointerId===joystickPointer)moveJoy(e);});
-function moveJoy(e){
-  const r=joyArea.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
-  let dx=e.clientX-cx,dy=e.clientY-cy;const max=34,len=Math.hypot(dx,dy);
-  if(len>max){dx=dx/len*max;dy=dy/len*max;}
-  joystickVector={x:dx/max,y:dy/max};
-  joy.style.left='calc(50% + '+dx+'px)';joy.style.top='calc(50% + '+dy+'px)';
-}
-function resetJoy(){joystickPointer=null;joystickVector={x:0,y:0};joy.style.left='50%';joy.style.top='50%';}
-joyArea.addEventListener('pointerup',resetJoy);joyArea.addEventListener('pointercancel',resetJoy);
+document.querySelectorAll('.move-button').forEach(button=>{
+  const dir=button.dataset.direction;
+  const down=e=>{e.preventDefault();touchDirections.add(dir);button.setPointerCapture?.(e.pointerId);};
+  const up=e=>{e.preventDefault();touchDirections.delete(dir);};
+  button.addEventListener('pointerdown',down);
+  button.addEventListener('pointerup',up);
+  button.addEventListener('pointercancel',up);
+  button.addEventListener('lostpointercapture',up);
+});
 $('start-button').addEventListener('click',()=>{
   selectedMode=$('mode-select').value;
   $('start-overlay').classList.add('hidden');
+  if(document.documentElement.requestFullscreen){document.documentElement.requestFullscreen().catch(()=>{});}
+  if(screen.orientation?.lock){screen.orientation.lock('landscape').catch(()=>{});}
   startRound(true);
 });
 $('continue-button').addEventListener('click',()=>{
