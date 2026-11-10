@@ -25,7 +25,7 @@ The game loads Three.js as an ES module from jsDelivr, so an internet connection
 
 - 3D square-tile survival arena
 - One human player and 15 AI competitors
-- 60-second rounds
+- 5-second rounds
 - Incorrect tiles fall away at the end of the countdown
 - Survival and elimination flow
 - Colour Rush, Math Madness, Animal Kingdom, Word Challenge, Shape Shifter, Memory Rush, Odd One Out, True or False, and Pattern Panic
