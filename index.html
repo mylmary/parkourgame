@@ -30,7 +30,7 @@
     <section class="challenge-panel">
       <div class="challenge-mode" id="mode-label">COLOUR RUSH</div>
       <div class="challenge-prompt" id="challenge-prompt">Find the RED tiles!</div>
-      <div class="challenge-hint" id="challenge-hint">Move onto a red square before the countdown ends.</div>
+      <div class="challenge-hint" id="challenge-hint"></div>
     </section>
 
     <div class="round-message" id="round-message" aria-live="polite"></div>
@@ -41,8 +41,13 @@
     </div>
 
     <div class="mobile-controls" id="mobile-controls">
-      <div class="joystick-area" id="joystick-area"><div class="joystick" id="joystick"></div></div>
       <button class="jump-button" id="jump-button">JUMP</button>
+      <div class="dpad" aria-label="Movement controls">
+        <button class="move-button move-up" data-direction="up" aria-label="Move forward">▲</button>
+        <button class="move-button move-left" data-direction="left" aria-label="Move left">◀</button>
+        <button class="move-button move-down" data-direction="down" aria-label="Move backward">▼</button>
+        <button class="move-button move-right" data-direction="right" aria-label="Move right">▶</button>
+      </div>
     </div>
 
     <section class="overlay" id="start-overlay">
