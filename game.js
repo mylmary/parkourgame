@@ -332,7 +332,7 @@ function dropWrongTiles() {
   });
   updateHUD();
   showMessage(playerSafe?'SAFE TILE!':'YOU FELL!');
-  roundResolveTimer=2.2;
+  roundResolveTimer=1.2;
 }
 function resolveRound() {
   const championNPC=actors.find(a=>a.alive);
@@ -349,7 +349,7 @@ function resolveRound() {
     return;
   }
   phase='between';
-  betweenTimer=1.15;
+  betweenTimer=.35;
   showMessage('ROUND '+round+' COMPLETE!');
 }
 function movePlayer(dt) {
