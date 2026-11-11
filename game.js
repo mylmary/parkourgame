@@ -1,6 +1,20 @@
 import * as THREE from 'three';
 
 const $ = (id) => document.getElementById(id);
+$('start-button').addEventListener('click',()=>{
+  try {
+    selectedMode=$('mode-select').value;
+    playerName=($('player-name').value.trim()||'Player').slice(0,14);
+    $('start-overlay').classList.add('hidden');
+    if(document.documentElement.requestFullscreen){document.documentElement.requestFullscreen().catch(()=>{});}
+    if(screen.orientation?.lock){screen.orientation.lock('landscape').catch(()=>{});}
+    startRound(true);
+  } catch(error) {
+    console.error('Could not start the game:',error);
+    $('start-overlay').classList.remove('hidden');
+    setToast('The game could not start. Please reload the page and try again.');
+  }
+});
 const root = $('game-root');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x9dbbd1);
@@ -44,20 +58,6 @@ let round = 0, timeLeft = 5, phase = 'menu', selectedMode = 'random', activeMode
 let challenge = null, survivors = 16, soundOn = true, lastTime = 0, roundResolveTimer = 0, betweenTimer = 0, playerName = 'Player';
 let joystickVector = { x: 0, y: 0 }, joystickPointer = null;
 const touchDirections = new Set();
-$('start-button').addEventListener('click',()=>{
-  try {
-    selectedMode=$('mode-select').value;
-    playerName=($('player-name').value.trim()||'Player').slice(0,14);
-    $('start-overlay').classList.add('hidden');
-    if(document.documentElement.requestFullscreen){document.documentElement.requestFullscreen().catch(()=>{});}
-    if(screen.orientation?.lock){screen.orientation.lock('landscape').catch(()=>{});}
-    startRound(true);
-  } catch(error) {
-    console.error('Could not start the game:',error);
-    $('start-overlay').classList.remove('hidden');
-    setToast('The game could not start. Please reload the page and try again.');
-  }
-});
 const npcNames = ['Milo','Zara','Kai','Luna','Theo','Mia','Leo','Nia','Ari','Ezra','Ivy','Noah','Ava','Finn','Remy'];
 const npcColors = [0xff776d,0xffbd4a,0x8c79ef,0x37c6a0,0x5aa8ef,0xe979b5,0xd1e45d,0xff8a45,0x63d7df,0xa0a8ff,0xe6a45c,0x65c48b,0xd78df0,0xf07158,0x7ca8dc];
 
