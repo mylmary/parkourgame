@@ -226,7 +226,7 @@ const palettes = [
 const animals = [{n:'CAT',e:'🐱'},{n:'DOG',e:'🐶'},{n:'LION',e:'🦁'},{n:'FISH',e:'🐟'},{n:'BIRD',e:'🐦'},{n:'PANDA',e:'🐼'}];
 const emojis = [{n:'HEART',e:'❤️'},{n:'STAR',e:'⭐'},{n:'SUN',e:'☀️'},{n:'MOON',e:'🌙'},{n:'FLOWER',e:'🌸'},{n:'RAINBOW',e:'🌈'},{n:'PIZZA',e:'🍕'},{n:'BALL',e:'⚽'}];
 const shapes = [{n:'CIRCLE',e:'●'},{n:'STAR',e:'★'},{n:'SQUARE',e:'■'},{n:'HEART',e:'♥'},{n:'TRIANGLE',e:'▲'},{n:'DIAMOND',e:'◆'}];
-const words = [{n:'APPLE',e:'APPLE'},{n:'HOUSE',e:'HOUSE'},{n:'RIVER',e:'RIVER'},{n:'CLOUD',e:'CLOUD'},{n:'PLANT',e:'PLANT'},{n:'TRAIN',e:'TRAIN'}];
+const words = [{n:'APPLE',e:'🍎'},{n:'HOUSE',e:'🏠'},{n:'RIVER',e:'🌊'},{n:'CLOUD',e:'☁️'},{n:'PLANT',e:'🪴'},{n:'TRAIN',e:'🚆'}];
 const pick = arr => arr[Math.floor(Math.random()*arr.length)];
 const shuffle = arr => [...arr].sort(()=>Math.random()-.5);
 function mathQuestion() {
@@ -259,7 +259,7 @@ function makeChallenge(mode) {
   }
   if(mode==='word') {
     const target=pick(words);
-    return {mode,prompt:target.n,hint:'',answer:target.n,options:shuffle([target.n,...shuffle(words.filter(w=>w.n!==target.n).map(w=>w.n)).slice(0,3)])};
+    return {mode,prompt:'Find the picture of '+target.n,hint:'',answer:target.n,options:shuffle([target.n,...shuffle(words.filter(w=>w.n!==target.n).map(w=>w.n)).slice(0,3)]),icons:Object.fromEntries(words.map(w=>[w.n,w.e]))};
   }
   if(mode==='shape') {
     const target=pick(shapes);
