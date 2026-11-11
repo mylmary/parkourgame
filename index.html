@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#101b35">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta name="app-version" content="mary-parkour-20261111-7">
+  <meta name="app-version" content="mary-parkour-20261111-8">
   <title>Mary's Parkour game</title>
-  <link rel="stylesheet" href="./styles.css?v=mary-parkour-20261111-7">
+  <link rel="stylesheet" href="./styles.css?v=mary-parkour-20261111-8">
   <script type="importmap">
     {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}
   </script>
@@ -26,7 +26,10 @@
         <div class="stat"><small>ALIVE</small><strong id="alive-value">16</strong></div>
         <div class="stat timer-stat"><small>TILES FALL IN</small><strong id="timer-value">5</strong></div>
       </div>
-      <button id="sound-button" class="icon-button" aria-label="Toggle sound">♪</button>
+      <div class="topbar-actions">
+        <button type="button" id="home-button" class="icon-button home-button hidden" aria-label="Return to home">⌂ <span>HOME</span></button>
+        <button type="button" id="sound-button" class="icon-button" aria-label="Toggle sound">♪</button>
+      </div>
     </header>
 
     <section class="challenge-panel">
@@ -94,6 +97,6 @@
 
     <div class="toast" id="toast" role="status"></div>
   </main>
-  <script type="module" src="./game.js?v=mary-parkour-20261111-7"></script>
+  <script type="module" src="./game.js?v=mary-parkour-20261111-8"></script>
 </body>
 </html>
