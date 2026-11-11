@@ -137,7 +137,38 @@ function makeLabel(text, color = '#17243a') {
 }
 function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 
+function createMaryActor(displayName='PLAYER') {
+  const g=new THREE.Group();
+  const mat=(color,roughness=.3)=>new THREE.MeshStandardMaterial({color,roughness});
+  const skin=mat(0xffc4a9,.38), hair=mat(0xffbd18,.24), hair2=mat(0xffd438,.22), pink=mat(0xf47db6,.3), wing=mat(0xffead8,.42), blue=mat(0x0754b9,.2), white=mat(0xffffff,.2), gold=mat(0xffc32d,.2), dark=mat(0x75422f,.4);
+  const ball=new THREE.SphereGeometry(1,28,22);
+  const add=(geo,material,pos,scale,rot)=>{const m=new THREE.Mesh(geo,material);m.position.set(...pos);if(scale)m.scale.set(...scale);if(rot)m.rotation.set(...rot);m.castShadow=true;g.add(m);return m;};
+  for(const x of [-.17,.17]){add(ball,skin,[x,.17,.025],[.17,.105,.19]);add(ball,skin,[x,.39,0],[.135,.22,.14]);}
+  add(new THREE.CylinderGeometry(.29,.55,.83,40),pink,[0,.91,0]);
+  add(ball,pink,[0,1.24,0],[.36,.27,.29]);
+  for(const side of [-1,1]){add(ball,pink,[side*.39,1.08,0],[.17,.43,.19],[0,0,side*-.12]);add(ball,skin,[side*.42,.72,.015],[.145,.17,.15]);}
+  add(ball,skin,[0,1.37,.015],[.19,.18,.18]);add(ball,skin,[0,1.82,.035],[.56,.57,.47]);
+  for(const x of [-.235,.235]){add(ball,blue,[x,1.87,.455],[.105,.145,.055]);add(ball,white,[x-.025,1.925,.505],[.027,.034,.018]);add(ball,hair,[x*.83,2.15,.455],[.095,.035,.035]);add(ball,mat(0xff927f,.5),[x*1.48,1.69,.405],[.105,.075,.025]);}
+  add(ball,skin,[0,1.77,.51],[.075,.055,.055]);
+  const smile=new THREE.CatmullRomCurve3([new THREE.Vector3(-.12,1.65,.49),new THREE.Vector3(0,1.60,.525),new THREE.Vector3(.12,1.65,.49)]);add(new THREE.TubeGeometry(smile,16,.018,8,false),dark,[0,0,0]);
+  add(new THREE.SphereGeometry(1,32,20,0,Math.PI*2,0,Math.PI*.56),hair,[0,2.08,-.015],[.59,.42,.5]);
+  add(ball,hair2,[-.27,2.02,.29],[.32,.23,.22],[0,0,-.52]);add(ball,hair2,[.27,2.02,.29],[.32,.23,.22],[0,0,.52]);
+  for(const side of [-1,1]){add(ball,hair,[side*.68,1.92,-.015],[.22,.43,.22],[0,0,side*-.12]);add(ball,hair2,[side*.72,1.72,.02],[.19,.27,.2],[0,0,side*-.25]);}
+  add(new THREE.TorusGeometry(.39,.065,12,40),gold,[0,2.66,-.015],[1,1,1],[Math.PI/2,0,0]);
+  for(const side of [-1,1]){add(ball,wing,[side*.64,1.26,-.22],[.35,.25,.13],[0,0,side*-.25]);for(let k=0;k<3;k++)add(ball,wing,[side*(.72+.035*k),1.48-.19*k,-.24],[.32,.14,.105],[0,0,side*-.18]);}
+  const front=(geo,material,x,y,z=.31,sx=1,sy=1,sz=1,rz=0)=>add(geo,material,[x,y,z],[sx,sy,sz],[0,0,rz]);
+  for(const [radius,color] of [[.205,0xf05b9e],[.16,0xffc83d],[.115,0x42c98c]]){const arc=new THREE.Mesh(new THREE.TorusGeometry(radius,.025,8,28,Math.PI),mat(color,.28));arc.position.set(-.16,1.08,.30);arc.rotation.z=Math.PI;g.add(arc);}
+  const heart=new THREE.Shape();heart.moveTo(0,-.09);heart.bezierCurveTo(-.2,.04,-.17,.19,0,.12);heart.bezierCurveTo(.17,.19,.2,.04,0,-.09);front(new THREE.ExtrudeGeometry(heart,{depth:.025,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.012,bevelThickness:.01}),mat(0xf04d9a,.24),.19,1.08,.31,.78,.78,.78);
+  front(new THREE.CircleGeometry(.13,24),gold,-.23,.79,.32);
+  for(const x of [-.045,.045])front(new THREE.CircleGeometry(.012,12),dark,-.23+x,.83,.34);
+  front(new THREE.BoxGeometry(.12,.12,.035),mat(0xe84e9c,.25),.06,.84,.34,1,1,1,Math.PI/4);front(new THREE.BoxGeometry(.055,.055,.04),gold,.06,.84,.365,1,1,1,Math.PI/4);
+  const star=new THREE.Shape();for(let i=0;i<10;i++){const a=Math.PI/2+i*Math.PI/5,r=i%2===0?.17:.078,x=Math.cos(a)*r,y=Math.sin(a)*r;if(i===0)star.moveTo(x,y);else star.lineTo(x,y);}star.closePath();front(new THREE.ExtrudeGeometry(star,{depth:.025,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.012,bevelThickness:.008}),mat(0x45c8df,.28),.25,.77,.32,1,1,1,-.12);
+  for(const side of [-1,1])front(ball,mat(0x9b59cf,.3),-.19+side*.075,.52,.32,[.075,.052,.026],[1,1,1][0],1,1,side*-.5);
+  g.scale.setScalar(1.12);g.userData.limbs=[];return g;
+}
+
 function makeActor(color, isPlayer = false, displayName = '', outfitIndex = 0) {
+  if(isPlayer) return createMaryActor(displayName);
   // Soft, rounded toy-like characters with simple expressive faces.
   const group = new THREE.Group();
   const shirt = new THREE.MeshStandardMaterial({ color, roughness: .48 });
