@@ -116,7 +116,7 @@ function makeLabel(text, color = '#17243a') {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   if (isPictogram) {
-    ctx.font = '170px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+    ctx.font = '122px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
     ctx.fillText(labelText, 128, 130);
   } else if (isNumber) {
     ctx.fillStyle = color;
@@ -131,7 +131,7 @@ function makeLabel(text, color = '#17243a') {
   texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.set(isPictogram ? 1.58 : isNumber ? 1.94 : 1.78, isPictogram ? 1.58 : isNumber ? 1.94 : 0.89, 1);
+  sprite.scale.set(isPictogram ? 1.02 : isNumber ? 1.94 : 1.78, isPictogram ? 1.02 : isNumber ? 1.94 : 0.89, 1);
   sprite.position.y = 0.28;
   return sprite;
 }
@@ -143,10 +143,23 @@ function createMaryActor(displayName='PLAYER') {
   const skin=mat(0xffc4a9,.38), hair=mat(0xffbd18,.24), hair2=mat(0xffd438,.22), pink=mat(0xf47db6,.3), wing=mat(0xffead8,.42), blue=mat(0x0754b9,.2), white=mat(0xffffff,.2), gold=mat(0xffc32d,.2), dark=mat(0x75422f,.4);
   const ball=new THREE.SphereGeometry(1,28,22);
   const add=(geo,material,pos,scale,rot)=>{const m=new THREE.Mesh(geo,material);m.position.set(...pos);if(scale)m.scale.set(...scale);if(rot)m.rotation.set(...rot);m.castShadow=true;g.add(m);return m;};
-  for(const x of [-.17,.17]){add(ball,skin,[x,.17,.025],[.135,.09,.16]);add(ball,skin,[x,.39,0],[.105,.22,.12]);}
+  const legPivots=[];
+  for(const x of [-.15,.15]){
+    const pivot=new THREE.Group();pivot.position.set(x,.48,0);g.add(pivot);
+    add(ball,skin,[0,-.13,0],[.105,.22,.12]);
+    const leg=pivot.children[pivot.children.length-1];
+    add(ball,skin,[0,-.29,.035],[.135,.09,.16]);
+    legPivots.push(pivot);
+  }
   add(new THREE.CylinderGeometry(.245,.44,.86,40),pink,[0,.91,0]);
   add(ball,pink,[0,1.24,0],[.29,.25,.25]);
-  for(const side of [-1,1]){add(ball,pink,[side*.32,1.08,0],[.13,.42,.15],[0,0,side*-.12]);add(ball,skin,[side*.35,.72,.015],[.12,.15,.13]);}
+  const armPivots=[];
+  for(const side of [-1,1]){
+    const pivot=new THREE.Group();pivot.position.set(side*.29,1.31,0);g.add(pivot);
+    add(ball,pink,[side*.035,-.23,0],[.13,.38,.15],[0,0,side*-.12]);
+    add(ball,skin,[side*.06,-.48,.015],[.12,.15,.13]);
+    armPivots.push(pivot);
+  }
   add(ball,skin,[0,1.37,.015],[.19,.18,.18]);add(ball,skin,[0,1.82,.035],[.51,.55,.43]);
   for(const x of [-.215,.215]){add(ball,blue,[x,1.87,.455],[.105,.145,.055]);add(ball,white,[x-.025,1.925,.505],[.027,.034,.018]);add(ball,hair,[x*.83,2.15,.455],[.095,.035,.035]);add(ball,mat(0xff927f,.5),[x*1.48,1.69,.405],[.105,.075,.025]);}
   add(ball,skin,[0,1.77,.51],[.075,.055,.055]);
@@ -164,7 +177,9 @@ function createMaryActor(displayName='PLAYER') {
   front(new THREE.BoxGeometry(.12,.12,.035),mat(0xe84e9c,.25),.06,.84,.34,1,1,1,Math.PI/4);front(new THREE.BoxGeometry(.055,.055,.04),gold,.06,.84,.365,1,1,1,Math.PI/4);
   const star=new THREE.Shape();for(let i=0;i<10;i++){const a=Math.PI/2+i*Math.PI/5,r=i%2===0?.17:.078,x=Math.cos(a)*r,y=Math.sin(a)*r;if(i===0)star.moveTo(x,y);else star.lineTo(x,y);}star.closePath();front(new THREE.ExtrudeGeometry(star,{depth:.025,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.012,bevelThickness:.008}),mat(0x45c8df,.28),.25,.77,.32,1,1,1,-.12);
   for(const side of [-1,1])front(ball,mat(0x9b59cf,.3),-.19+side*.075,.52,.32,.075,.052,.026,side*-.5);
-  g.scale.setScalar(1.12);g.userData.limbs=[];return g;
+  g.scale.setScalar(.9);
+  g.userData.limbs={legs:legPivots,arms:armPivots};
+  return g;
 }
 
 function makeActor(color, isPlayer = false, displayName = '', outfitIndex = 0) {
@@ -431,9 +446,14 @@ function chooseTarget() {
 }
 function iSeed(x,z){return x*1.7+z*.9;}
 function animateAvatar(mesh,running,t){
-  const sway=running?Math.sin(t)*.035:Math.sin(t*.35)*.012;
-  mesh.rotation.z=sway;
-  mesh.scale.y=1+(running?Math.sin(t*2)*.018:0);
+  const swing=running?Math.sin(t*2.8)*.48:0;
+  mesh.rotation.z=running?Math.sin(t)*.025:Math.sin(t*.35)*.01;
+  mesh.scale.y=1+(running?Math.sin(t*5.6)*.012:0);
+  const limbs=mesh.userData.limbs;
+  if(limbs && !Array.isArray(limbs)){
+    limbs.legs?.forEach((leg,i)=>{leg.rotation.x=swing*(i===0?1:-1);});
+    limbs.arms?.forEach((arm,i)=>{arm.rotation.x=-swing*(i===0?1:-1)*.65;});
+  }
 }
 function directNPCs(dt) {
   for(const a of actors){
