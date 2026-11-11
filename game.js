@@ -1,20 +1,33 @@
 import * as THREE from 'three';
 
 const $ = (id) => document.getElementById(id);
-$('start-button').addEventListener('click',()=>{
+let startInProgress = false;
+function beginGame(event) {
+  if (event) { event.preventDefault(); event.stopPropagation(); }
+  if (startInProgress || phase !== 'menu') return;
+  startInProgress = true;
   try {
-    selectedMode=$('mode-select').value;
-    playerName=($('player-name').value.trim()||'Player').slice(0,14);
+    selectedMode = $('mode-select').value;
+    playerName = ($('player-name').value.trim() || 'Player').slice(0, 14);
     $('start-overlay').classList.add('hidden');
-    if(document.documentElement.requestFullscreen){document.documentElement.requestFullscreen().catch(()=>{});}
-    if(screen.orientation?.lock){screen.orientation.lock('landscape').catch(()=>{});}
+    if (document.documentElement.requestFullscreen) {
+      const fullscreenResult = document.documentElement.requestFullscreen();
+      fullscreenResult?.catch(() => {});
+    }
+    if (screen.orientation?.lock) screen.orientation.lock('landscape').catch(() => {});
     startRound(true);
-  } catch(error) {
-    console.error('Could not start the game:',error);
+  } catch (error) {
+    console.error('Could not start the game:', error);
     $('start-overlay').classList.remove('hidden');
-    setToast('The game could not start. Please reload the page and try again.');
+    setToast('Start error: ' + (error?.message || String(error)));
+    startInProgress = false;
   }
-});
+}
+const startButton = $('start-button');
+startButton.style.pointerEvents = 'auto';
+startButton.addEventListener('pointerup', beginGame);
+startButton.addEventListener('click', beginGame);
+window.startMaryParkourGame = beginGame;
 const root = $('game-root');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x9dbbd1);
