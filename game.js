@@ -319,10 +319,9 @@ function setupChallenge() {
   const safeTiles=new Set(farthestFirst.slice(0,safeCount));
   const distractors=shuffle(challenge.options.filter(value=>value!==challenge.answer));
   let distractorIndex=0;
-  const arranged=tileMeshes.map(tile=>safeTiles.has(tile)?challenge.answer:distractors[distractorIndex++%distractors.length]);
-  const shuffled=shuffle(arranged);
-  tileMeshes.forEach((tile,i)=>{
-    tile.value=shuffled[i]; tile.falling=false; tile.mesh.visible=true; tile.edge.visible=true;
+  tileMeshes.forEach(tile=>{
+    tile.value=safeTiles.has(tile)?challenge.answer:distractors[distractorIndex++%distractors.length];
+    tile.falling=false; tile.mesh.visible=true; tile.edge.visible=true;
     tile.mesh.position.set(tile.x,0,tile.z); tile.edge.position.set(tile.x,-.15,tile.z);
     tile.mesh.material.color.setHex(colorFor(tile.value));
     tile.mesh.material.emissive.setHex(0x000000);
