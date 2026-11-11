@@ -96,24 +96,42 @@ const npcNames = ['Luna','Mia','Daisy','Coco','Poppy','Ivy','Rosie','Bella','Moc
 const npcColors = [0xff91b8,0xb89aff,0x72c9f2,0xffc46b,0x78d8b5,0xf28bbd,0x9aabff,0xff9c82,0x9bdc8a];
 
 function makeLabel(text, color = '#17243a') {
+  const labelText = String(text).slice(0, 9);
+  const isPictogram = /\p{Extended_Pictographic}/u.test(labelText) || /^[●★■♥▲◆]$/u.test(labelText);
+  const isNumber = /^\d+$/.test(labelText);
+  // Give picture and symbol labels a square canvas so their full artwork can
+  // occupy most of the tile face instead of being squeezed into a wide strip.
   const canvas = document.createElement('canvas');
-  canvas.width = 256; canvas.height = 128;
+  canvas.width = 256;
+  canvas.height = (isPictogram || isNumber) ? 256 : 128;
   const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, 256, 128);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = 'rgba(255,255,255,.93)';
-  roundRect(ctx, 8, 8, 240, 112, 24);
+  if (isPictogram || isNumber) {
+    roundRect(ctx, 8, 8, 240, 240, 36);
+  } else {
+    roundRect(ctx, 8, 8, 240, 112, 24);
+  }
   ctx.fill();
-  ctx.fillStyle = color;
-  const labelText=String(text).slice(0, 9);
-  const isLargeVisual=/\p{Extended_Pictographic}/u.test(labelText) || /^\d+$/.test(labelText) || /^[●★■♥▲◆]$/u.test(labelText);
-  ctx.font = isLargeVisual ? '900 104px Arial, sans-serif' : '900 54px Arial, sans-serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(labelText, 128, 66);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  if (isPictogram) {
+    ctx.font = '200px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+    ctx.fillText(labelText, 128, 130);
+  } else if (isNumber) {
+    ctx.fillStyle = color;
+    ctx.font = '900 184px Arial, sans-serif';
+    ctx.fillText(labelText, 128, 130);
+  } else {
+    ctx.fillStyle = color;
+    ctx.font = '900 54px Arial, sans-serif';
+    ctx.fillText(labelText, 128, 66);
+  }
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.set(isLargeVisual ? 1.78 : 1.12, isLargeVisual ? 0.9 : 0.56, 1);
+  sprite.scale.set((isPictogram || isNumber) ? 1.94 : 1.78, (isPictogram || isNumber) ? 1.94 : 0.89, 1);
   sprite.position.y = 0.28;
   return sprite;
 }
