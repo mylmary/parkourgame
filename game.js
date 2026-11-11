@@ -402,21 +402,53 @@ function updateCamera(dt) {
   camera.lookAt(player.x*.2,0,player.z*.2-1);
 }
 function resize() {
-  const w=root.clientWidth||window.innerWidth,h=root.clientHeight||window.innerHeight;
-  camera.aspect=w/h; camera.updateProjectionMatrix(); renderer.setSize(w,h);
+  const rect=root.getBoundingClientRect();
+  const w=Math.max(1,Math.round(rect.width||root.clientWidth||window.innerWidth));
+  const h=Math.max(1,Math.round(rect.height||root.clientHeight||window.innerHeight));
+  camera.aspect=w/h;
+  camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.7));
+  renderer.setSize(w,h,false);
 }
-window.addEventListener('resize',resize); resize();
+let resizeFrame=0;
+function scheduleResize(){
+  cancelAnimationFrame(resizeFrame);
+  resizeFrame=requestAnimationFrame(resize);
+}
+window.addEventListener('resize',scheduleResize,{passive:true});
+window.addEventListener('orientationchange',()=>setTimeout(scheduleResize,120),{passive:true});
+window.visualViewport?.addEventListener('resize',scheduleResize,{passive:true});
+if(window.ResizeObserver){new ResizeObserver(scheduleResize).observe(root);}
+resize();
 window.addEventListener('keydown',e=>{
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
   keys.add(e.code);
   if(e.code==='Space') player.jumpQueued=true;
 });
 window.addEventListener('keyup',e=>keys.delete(e.code));
-$('jump-button').addEventListener('pointerdown',e=>{e.preventDefault();player.jumpQueued=true;});
+function clearTouchInput(){
+  touchDirections.clear();
+  joystickVector={x:0,y:0};
+  joystickPointer=null;
+  keys.clear();
+}
+window.addEventListener('blur',clearTouchInput);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)clearTouchInput();});
+$('jump-button').addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  if(e.isPrimary||e.pointerType==='touch') player.jumpQueued=true;
+});
 document.querySelectorAll('.move-button').forEach(button=>{
   const dir=button.dataset.direction;
-  const down=e=>{e.preventDefault();touchDirections.add(dir);button.setPointerCapture?.(e.pointerId);};
-  const up=e=>{e.preventDefault();touchDirections.delete(dir);};
+  const down=e=>{
+    e.preventDefault();
+    touchDirections.add(dir);
+    try{button.setPointerCapture(e.pointerId);}catch(_){}
+  };
+  const up=e=>{
+    e.preventDefault();
+    touchDirections.delete(dir);
+  };
   button.addEventListener('pointerdown',down);
   button.addEventListener('pointerup',up);
   button.addEventListener('pointercancel',up);
