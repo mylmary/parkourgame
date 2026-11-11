@@ -21,6 +21,8 @@ button,select{font:inherit}
 .icon-button{width:36px;height:36px;border:1px solid rgba(255,255,255,.2);border-radius:50%;background:rgba(11,22,44,.65);color:white;font-size:20px}
 .challenge-panel{position:absolute;z-index:2;top:94px;left:50%;transform:translateX(-50%);width:min(440px,calc(100% - 32px));padding:14px 20px 15px;text-align:center;border:1px solid rgba(255,255,255,.18);border-radius:18px;background:rgba(12,24,47,.82);box-shadow:0 14px 35px rgba(0,0,0,.16);backdrop-filter:blur(12px);pointer-events:none}
 .challenge-mode{font-size:9px;letter-spacing:.18em;font-weight:900;color:#80e8b6}
+.challenge-mode,.challenge-hint{display:none}
+.challenge-prompt{margin-top:0}
 .challenge-prompt{margin-top:5px;font-size:clamp(20px,3.4vw,29px);font-weight:900;line-height:1.15}
 .challenge-hint{margin-top:5px;font-size:11px;color:#c3d0e3}
 .bottom-hud{position:absolute;z-index:2;bottom:20px;left:22px;right:22px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
