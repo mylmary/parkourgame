@@ -28,11 +28,11 @@ button,select{font:inherit}
 .mode-chip{color:#8df0bf}
 .round-message{position:absolute;z-index:4;top:43%;left:50%;transform:translate(-50%,-50%);font-size:clamp(24px,5vw,48px);font-weight:900;text-align:center;text-shadow:0 4px 20px rgba(0,0,0,.45);pointer-events:none;opacity:0;transition:opacity .2s}
 .round-message.show{opacity:1}
-.overlay{position:absolute;z-index:10;inset:0;display:grid;place-items:center;padding:18px;background:rgba(7,14,29,.68);backdrop-filter:blur(8px)}
+.overlay{position:absolute;z-index:10;inset:0;display:grid;place-items:center;padding:18px;overflow-y:auto;background:rgba(7,14,29,.68);backdrop-filter:blur(8px)}
 .hidden{display:none!important}
 .modal{width:min(470px,100%);padding:34px;border:1px solid rgba(255,255,255,.16);border-radius:24px;background:#152541;box-shadow:0 25px 90px rgba(0,0,0,.35)}
 .eyebrow{font-size:9px;letter-spacing:.2em;font-weight:900;color:#7ce6b2}
-.start-modal h1{margin:12px 0 12px;font-size:clamp(35px,7vw,54px);line-height:.99;letter-spacing:-.055em}
+.start-modal h1{margin:12px 0 22px;font-size:clamp(30px,6vw,46px);line-height:1.08;letter-spacing:-.045em}.start-modal h1.game-title{color:#fff}
 .start-modal h1 span{color:#79e6b4}
 .modal p{margin:0;color:#bdcce0;font-size:13px;line-height:1.65}
 .mode-picker{margin:15px 0 14px}
@@ -65,3 +65,7 @@ button,select{font:inherit}
  .mobile-controls{display:flex}.modal{padding:25px 22px}.start-modal h1{font-size:42px}
 }
 @media(max-height:650px){.challenge-panel{top:65px}.mobile-controls{bottom:12px}.bottom-hud{bottom:8px}.modal{padding:22px}}
+
+.scroll-controls{position:absolute;z-index:12;right:12px;bottom:118px;display:flex;flex-direction:column;gap:8px;pointer-events:auto}
+.scroll-controls button{width:38px;height:38px;border:1px solid rgba(255,255,255,.5);border-radius:10px;background:rgba(12,24,47,.88);color:#fff;font-size:16px;font-weight:900;box-shadow:0 3px 12px rgba(0,0,0,.28);touch-action:manipulation}
+.scroll-controls button:active{background:#16b981;color:#062a24}
