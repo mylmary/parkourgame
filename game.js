@@ -95,25 +95,43 @@ const touchDirections = new Set();
 const npcNames = ['Luna','Mia','Daisy','Coco','Poppy','Ivy','Rosie','Bella','Mochi'];
 const npcColors = [0xff91b8,0xb89aff,0x72c9f2,0xffc46b,0x78d8b5,0xf28bbd,0x9aabff,0xff9c82,0x9bdc8a];
 
-function makeLabel(text, color = '#17243a') {
+function makeLabel(text, color = '#17243a', tileHex = 0xffffff) {
+  const labelText = String(text).slice(0, 9);
+  const isEmoji = /\p{Extended_Pictographic}/u.test(labelText);
+  const isLargeVisual = isEmoji || /^\d+$/.test(labelText) || /^[●★■♥▲◆]$/u.test(labelText);
   const canvas = document.createElement('canvas');
-  canvas.width = 256; canvas.height = 128;
   const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, 256, 128);
-  ctx.fillStyle = 'rgba(255,255,255,.93)';
-  roundRect(ctx, 8, 8, 240, 112, 24);
-  ctx.fill();
-  ctx.fillStyle = color;
-  const labelText=String(text).slice(0, 9);
-  const isLargeVisual=/\p{Extended_Pictographic}/u.test(labelText) || /^\d+$/.test(labelText) || /^[●★■♥▲◆]$/u.test(labelText);
-  ctx.font = isLargeVisual ? '900 104px Arial, sans-serif' : '900 54px Arial, sans-serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(labelText, 128, 66);
+
+  if (isEmoji) {
+    // Render the emoji glyph as a transparent silhouette, then tint it to
+    // harmonise with its tile. This removes the white sticker-like label.
+    canvas.width = 256; canvas.height = 256;
+    ctx.clearRect(0, 0, 256, 256);
+    ctx.font = '150px "Apple Color Emoji","Noto Color Emoji",sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(labelText, 128, 128);
+    const tileColor = new THREE.Color(tileHex);
+    tileColor.multiplyScalar(0.38);
+    ctx.globalCompositeOperation = 'source-in';
+    ctx.fillStyle = '#' + tileColor.getHexString();
+    ctx.fillRect(0, 0, 256, 256);
+  } else {
+    canvas.width = 256; canvas.height = 128;
+    ctx.clearRect(0, 0, 256, 128);
+    ctx.fillStyle = 'rgba(255,255,255,.93)';
+    roundRect(ctx, 8, 8, 240, 112, 24);
+    ctx.fill();
+    ctx.fillStyle = color;
+    ctx.font = isLargeVisual ? '900 104px Arial, sans-serif' : '900 54px Arial, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(labelText, 128, 66);
+  }
+
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.set(isLargeVisual ? 1.78 : 1.12, isLargeVisual ? 0.9 : 0.56, 1);
+  sprite.scale.set(isEmoji ? 1.18 : (isLargeVisual ? 1.78 : 1.12), isEmoji ? 1.18 : (isLargeVisual ? 0.9 : 0.56), 1);
   sprite.position.y = 0.28;
   return sprite;
 }
@@ -323,7 +341,7 @@ function setupChallenge() {
     tile.mesh.material.color.setHex(colorFor(tile.value));
     tile.mesh.material.emissive.setHex(0x000000);
     if(tile.label){tile.mesh.remove(tile.label);tile.label.material.map.dispose();tile.label.material.dispose();}
-    tile.label=makeLabel(labelFor(tile.value), '#15243b');
+    tile.label=makeLabel(labelFor(tile.value), '#15243b', colorFor(tile.value));
     tile.mesh.add(tile.label);
   });
 }
