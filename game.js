@@ -408,8 +408,12 @@ document.querySelectorAll('.move-button').forEach(button=>{
   button.addEventListener('pointercancel',up);
   button.addEventListener('lostpointercapture',up);
 });
-$('scroll-up').addEventListener('click',()=>{const overlay=document.querySelector('.overlay:not(.hidden)');if(overlay) overlay.scrollBy({top:-220,behavior:'smooth'});});
-$('scroll-down').addEventListener('click',()=>{const overlay=document.querySelector('.overlay:not(.hidden)');if(overlay) overlay.scrollBy({top:220,behavior:'smooth'});});
+function scrollPage(direction){const overlay=document.querySelector('.overlay:not(.hidden)');const target=overlay||document.scrollingElement;if(target)target.scrollBy({top:direction*260,behavior:'smooth'});}
+$('scroll-up').addEventListener('click',()=>scrollPage(-1));
+$('scroll-down').addEventListener('click',()=>scrollPage(1));
+let touchScrollStartY=null;
+document.addEventListener('touchstart',e=>{if(document.querySelector('.overlay:not(.hidden)'))touchScrollStartY=e.touches[0].clientY;},{passive:true});
+document.addEventListener('touchend',e=>{const overlay=document.querySelector('.overlay:not(.hidden)');if(!overlay||touchScrollStartY===null)return;const delta=touchScrollStartY-e.changedTouches[0].clientY;if(Math.abs(delta)>25)overlay.scrollBy({top:delta,behavior:'auto'});touchScrollStartY=null;},{passive:true});
 
 $('start-button').addEventListener('click',()=>{
   selectedMode=$('mode-select').value;
