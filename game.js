@@ -44,6 +44,20 @@ let round = 0, timeLeft = 5, phase = 'menu', selectedMode = 'random', activeMode
 let challenge = null, survivors = 16, soundOn = true, lastTime = 0, roundResolveTimer = 0, betweenTimer = 0, playerName = 'Player';
 let joystickVector = { x: 0, y: 0 }, joystickPointer = null;
 const touchDirections = new Set();
+$('start-button').addEventListener('click',()=>{
+  try {
+    selectedMode=$('mode-select').value;
+    playerName=($('player-name').value.trim()||'Player').slice(0,14);
+    $('start-overlay').classList.add('hidden');
+    if(document.documentElement.requestFullscreen){document.documentElement.requestFullscreen().catch(()=>{});}
+    if(screen.orientation?.lock){screen.orientation.lock('landscape').catch(()=>{});}
+    startRound(true);
+  } catch(error) {
+    console.error('Could not start the game:',error);
+    $('start-overlay').classList.remove('hidden');
+    setToast('The game could not start. Please reload the page and try again.');
+  }
+});
 const npcNames = ['Milo','Zara','Kai','Luna','Theo','Mia','Leo','Nia','Ari','Ezra','Ivy','Noah','Ava','Finn','Remy'];
 const npcColors = [0xff776d,0xffbd4a,0x8c79ef,0x37c6a0,0x5aa8ef,0xe979b5,0xd1e45d,0xff8a45,0x63d7df,0xa0a8ff,0xe6a45c,0x65c48b,0xd78df0,0xf07158,0x7ca8dc];
 
@@ -408,21 +422,7 @@ document.querySelectorAll('.move-button').forEach(button=>{
   button.addEventListener('pointercancel',up);
   button.addEventListener('lostpointercapture',up);
 });
-function scrollPage(direction){const overlay=document.querySelector('.overlay:not(.hidden)');const target=overlay||document.scrollingElement;if(target)target.scrollBy({top:direction*260,behavior:'smooth'});}
-$('scroll-up').addEventListener('click',()=>scrollPage(-1));
-$('scroll-down').addEventListener('click',()=>scrollPage(1));
-let touchScrollStartY=null;
-document.addEventListener('touchstart',e=>{if(document.querySelector('.overlay:not(.hidden)'))touchScrollStartY=e.touches[0].clientY;},{passive:true});
-document.addEventListener('touchend',e=>{const overlay=document.querySelector('.overlay:not(.hidden)');if(!overlay||touchScrollStartY===null)return;const delta=touchScrollStartY-e.changedTouches[0].clientY;if(Math.abs(delta)>25)overlay.scrollBy({top:delta,behavior:'auto'});touchScrollStartY=null;},{passive:true});
 
-$('start-button').addEventListener('click',()=>{
-  selectedMode=$('mode-select').value;
-  playerName=($('player-name').value.trim()||'Player').slice(0,14);
-  $('start-overlay').classList.add('hidden');
-  if(document.documentElement.requestFullscreen){document.documentElement.requestFullscreen().catch(()=>{});}
-  if(screen.orientation?.lock){screen.orientation.lock('landscape').catch(()=>{});}
-  startRound(true);
-});
 $('continue-button').addEventListener('click',()=>{
   if(phase==='result'){round=0;player.alive=true;actors.forEach(a=>a.alive=true);startRound(true);}
   else startRound(false);
