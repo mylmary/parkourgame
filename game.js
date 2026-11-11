@@ -305,22 +305,19 @@ function setupChallenge() {
   $('mode-chip').textContent=modeNames[activeMode];
   const promptEl=$('challenge-prompt');
   promptEl.textContent=challenge.prompt;
-  $('challenge-hint').textContent='';
+  $('challenge-hint').textContent='Correct tiles are scattered randomly across the whole arena. Their positions change every round.';
   const contrastingText={PINK:'#ff9bb9',BLUE:'#75c9f5',YELLOW:'#ffd45f',MINT:'#78dfbc',PURPLE:'#c0a5ff',PEACH:'#ffad8c'};
   promptEl.style.color=activeMode==='colour'?(contrastingText[challenge.answer]||'#ffffff'):'#ffffff';
-  const values=[];
-  while(values.length<tileMeshes.length) values.push(challenge.options[values.length%challenge.options.length]);
-  const shuffled=shuffle(values);
-  // Keep correct answers farther from the starting edge, with fewer safe choices in later rounds.
-  const startX=0, startZ=HALF+0.5;
-  const farthestFirst=[...tileMeshes].sort((a,b)=>Math.hypot(b.x-startX,b.z-startZ)-Math.hypot(a.x-startX,a.z-startZ));
+  // Randomly scatter the safe answers across the entire arena; no edge or row is favoured.
   const baseSafeCount=Math.ceil(tileMeshes.length/challenge.options.length);
   const safeCount=Math.max(6,baseSafeCount-Math.floor((round-1)*1.1));
-  const safeTiles=new Set(farthestFirst.slice(0,safeCount));
+  const safeTiles=new Set(shuffle(tileMeshes).slice(0,safeCount));
   const distractors=shuffle(challenge.options.filter(value=>value!==challenge.answer));
-  let distractorIndex=0;
+  const remainingTiles=shuffle(tileMeshes.filter(tile=>!safeTiles.has(tile)));
+  const distractorValues=shuffle(Array.from({length:remainingTiles.length},(_,i)=>distractors[i%distractors.length]));
+  remainingTiles.forEach((tile,i)=>{tile.value=distractorValues[i];});
   tileMeshes.forEach(tile=>{
-    tile.value=safeTiles.has(tile)?challenge.answer:distractors[distractorIndex++%distractors.length];
+    if(safeTiles.has(tile)) tile.value=challenge.answer;
     tile.falling=false; tile.mesh.visible=true; tile.edge.visible=true;
     tile.mesh.position.set(tile.x,0,tile.z); tile.edge.position.set(tile.x,-.15,tile.z);
     tile.mesh.material.color.setHex(colorFor(tile.value));
