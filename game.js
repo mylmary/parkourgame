@@ -408,6 +408,9 @@ document.querySelectorAll('.move-button').forEach(button=>{
   button.addEventListener('pointercancel',up);
   button.addEventListener('lostpointercapture',up);
 });
+$('scroll-up').addEventListener('click',()=>{const overlay=document.querySelector('.overlay:not(.hidden)');if(overlay) overlay.scrollBy({top:-220,behavior:'smooth'});});
+$('scroll-down').addEventListener('click',()=>{const overlay=document.querySelector('.overlay:not(.hidden)');if(overlay) overlay.scrollBy({top:220,behavior:'smooth'});});
+
 $('start-button').addEventListener('click',()=>{
   selectedMode=$('mode-select').value;
   playerName=($('player-name').value.trim()||'Player').slice(0,14);
