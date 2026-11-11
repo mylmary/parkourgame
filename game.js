@@ -10,6 +10,7 @@ function beginGame(event) {
     selectedMode = $('mode-select').value;
     playerName = ($('player-name').value.trim() || 'Player').slice(0, 14);
     $('start-overlay').classList.add('hidden');
+    $('home-button').classList.remove('hidden');
     if (document.documentElement.requestFullscreen) {
       const fullscreenResult = document.documentElement.requestFullscreen();
       fullscreenResult?.catch(() => {});
@@ -28,6 +29,22 @@ startButton.style.pointerEvents = 'auto';
 startButton.addEventListener('pointerup', beginGame);
 startButton.addEventListener('click', beginGame);
 window.startMaryParkourGame = beginGame;
+
+function returnHome() {
+  clearTouchInput();
+  player.jumpQueued = false;
+  phase = 'menu';
+  startInProgress = false;
+  $('home-button').classList.add('hidden');
+  $('result-overlay').classList.add('hidden');
+  $('start-overlay').classList.remove('hidden');
+  $('player-name').value = playerName === 'Player' ? $('player-name').value : playerName;
+}
+$('home-button').addEventListener('click', returnHome);
+$('home-button').addEventListener('pointerup', event => {
+  event.preventDefault();
+  returnHome();
+});
 const root = $('game-root');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x9dbbd1);
