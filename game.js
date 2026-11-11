@@ -183,7 +183,11 @@ function makeChallenge(mode) {
     const target=pick(palettes);
     return {mode,prompt:target.name,hint:'',answer:target.name,options:shuffle([target.name,...shuffle(palettes.filter(p=>p.name!==target.name).map(p=>p.name)).slice(0,3)]),colors:Object.fromEntries(palettes.map(p=>[p.name,p.hex]))};
   }
-  if(mode==='math') const q=mathQuestion(); q.prompt=q.prompt.replace(' = ?',' = ?'); q.hint=''; return {mode,...q};
+  if(mode==='math') {
+    const q=mathQuestion();
+    q.hint='';
+    return {mode,...q};
+  }
   if(mode==='animal') {
     const target=pick(animals);
     return {mode,prompt:target.n,hint:'',answer:target.n,options:shuffle([target.n,...shuffle(animals.filter(a=>a.n!==target.n).map(a=>a.n)).slice(0,3)]),icons:Object.fromEntries(animals.map(a=>[a.n,a.e]))};
