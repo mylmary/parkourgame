@@ -203,7 +203,7 @@ body{background:#f8e7ef}
 
 /* Eight-by-eight arena and circular mobile direction pad */
 .direction-circle{
- position:relative;flex:0 0 auto;width:clamp(126px,27vh,158px);height:clamp(126px,27vh,158px);
+ position:relative;flex:0 0 auto;width:clamp(148px,30vh,180px);height:clamp(148px,30vh,180px);
  border:3px solid rgba(255,255,255,.92);border-radius:50%;
  background:radial-gradient(circle at 35% 28%,#fff7fc 0%,#f9d9e9 62%,#efb9d4 100%);
  box-shadow:0 7px 22px rgba(143,82,123,.22),inset 0 2px 8px rgba(255,255,255,.95);
@@ -229,7 +229,11 @@ body{background:#f8e7ef}
 .mobile-controls{align-items:flex-end}
 .jump-button{background:#9b8be9;color:#fff;border:3px solid #fff;box-shadow:0 6px 18px rgba(116,91,171,.24)}
 @media(max-height:520px){
- .direction-circle{width:clamp(108px,25vh,132px);height:clamp(108px,25vh,132px)}
+ .direction-circle{width:clamp(132px,28vh,152px);height:clamp(132px,28vh,152px)}
  .direction-circle .move-button{font-size:17px}
  .jump-button{width:clamp(60px,15vh,74px);height:clamp(60px,15vh,74px)}
 }
+
+/* Mobile layout: jump on the left, larger movement pad on the right. */
+.mobile-controls .jump-button{order:0}
+.mobile-controls .direction-circle{order:1}
