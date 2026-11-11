@@ -340,9 +340,18 @@ function setupChallenge() {
     tile.mesh.position.set(tile.x,0,tile.z); tile.edge.position.set(tile.x,-.15,tile.z);
     tile.mesh.material.color.setHex(colorFor(tile.value));
     tile.mesh.material.emissive.setHex(0x000000);
-    if(tile.label){tile.mesh.remove(tile.label);tile.label.material.map.dispose();tile.label.material.dispose();}
-    tile.label=makeLabel(labelFor(tile.value), '#15243b');
-    tile.mesh.add(tile.label);
+    if(tile.label){
+      tile.mesh.remove(tile.label);
+      tile.label.material.map?.dispose();
+      tile.label.material.dispose();
+      tile.label=null;
+    }
+    // Colour Rush is a visual recognition challenge: show the colour itself,
+    // not a text label that gives away the answer and clutters the tile.
+    if(activeMode!=='colour'){
+      tile.label=makeLabel(labelFor(tile.value), '#15243b');
+      tile.mesh.add(tile.label);
+    }
   });
 }
 
