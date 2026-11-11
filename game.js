@@ -259,7 +259,7 @@ function makeChallenge(mode) {
   }
   if(mode==='word') {
     const target=pick(words);
-    return {mode,prompt:'Find the picture of '+target.n,hint:'',answer:target.n,options:shuffle([target.n,...shuffle(words.filter(w=>w.n!==target.n).map(w=>w.n)).slice(0,3)]),icons:Object.fromEntries(words.map(w=>[w.n,w.e]))};
+    return {mode,prompt:target.n,hint:'',answer:target.n,options:shuffle([target.n,...shuffle(words.filter(w=>w.n!==target.n).map(w=>w.n)).slice(0,3)]),icons:Object.fromEntries(words.map(w=>[w.n,w.e]))};
   }
   if(mode==='shape') {
     const target=pick(shapes);
@@ -305,7 +305,7 @@ function setupChallenge() {
   $('mode-chip').textContent=modeNames[activeMode];
   const promptEl=$('challenge-prompt');
   promptEl.textContent=challenge.prompt;
-  $('challenge-hint').textContent='Correct tiles are scattered randomly across the whole arena. Their positions change every round.';
+  $('challenge-hint').textContent='';
   const contrastingText={PINK:'#ff9bb9',BLUE:'#75c9f5',YELLOW:'#ffd45f',MINT:'#78dfbc',PURPLE:'#c0a5ff',PEACH:'#ffad8c'};
   promptEl.style.color=activeMode==='colour'?(contrastingText[challenge.answer]||'#ffffff'):'#ffffff';
   // Randomly scatter the safe answers across the entire arena; no edge or row is favoured.
