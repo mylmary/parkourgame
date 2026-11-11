@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#101b35">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta name="app-version" content="mary-parkour-20261111-2">
+  <meta name="app-version" content="mary-parkour-20261111-3">
   <title>Mary's Parkour game</title>
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=mary-parkour-20261111-3">
   <script type="importmap">
     {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}
   </script>
@@ -59,7 +59,6 @@
 
     <section class="overlay" id="start-overlay">
       <div class="modal start-modal">
-        <div class="eyebrow">THE LEARNING SURVIVAL GAME</div>
         <h1 class="game-title">Mary's Parkour game</h1>
         <div class="mode-picker">
           <label for="player-name">YOUR PLAYER NAME</label>
@@ -81,7 +80,6 @@
           </select>
         </div>
         <button id="start-button" class="primary-button">ENTER THE ARENA <span>→</span></button>
-        <div class="start-note">1 player · 15 AI competitors · 10 rounds · 5 seconds each</div>
       </div>
     </section>
 
@@ -100,6 +98,6 @@
 
     <div class="toast" id="toast" role="status"></div>
   </main>
-  <script type="module" src="./game.js"></script>
+  <script type="module" src="./game.js?v=mary-parkour-20261111-3"></script>
 </body>
 </html>
