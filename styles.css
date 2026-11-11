@@ -66,6 +66,3 @@ button,select{font:inherit}
 }
 @media(max-height:650px){.challenge-panel{top:65px}.mobile-controls{bottom:12px}.bottom-hud{bottom:8px}.modal{padding:22px}}
 
-.scroll-controls{position:fixed;z-index:30;right:12px;bottom:18px;display:flex;flex-direction:column;gap:8px;pointer-events:auto}
-.scroll-controls button{width:44px;height:44px;border:1px solid rgba(255,255,255,.5);border-radius:10px;background:rgba(12,24,47,.88);color:#fff;font-size:16px;font-weight:900;box-shadow:0 3px 12px rgba(0,0,0,.28);touch-action:manipulation}
-.scroll-controls button:active{background:#16b981;color:#062a24}
