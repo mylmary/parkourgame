@@ -158,3 +158,44 @@ button,select{font:inherit}
 .home-button span{font-size:9px;font-weight:900;letter-spacing:.05em}
 .home-button.hidden{display:none!important}
 @media (max-height:520px){.home-button{height:30px;min-width:64px;padding:0 8px}.home-button span{font-size:8px}}
+
+
+/* Cute pastel polish: soft, readable controls and a brighter play space. */
+:root{font-family:'Nunito','Trebuchet MS',system-ui,sans-serif;color:#634b68;background:#f8e7ef}
+body{background:#f8e7ef}
+#game-shell{background:#c7eaf7}
+.topbar{background:linear-gradient(180deg,rgba(255,249,252,.92),rgba(255,249,252,0));}
+.brand{color:#76536f;letter-spacing:.055em}
+.brand b{color:#e66e9e}
+.brand-mark{background:#ff91b8;color:#fff;border-radius:13px;box-shadow:0 4px 12px rgba(218,103,151,.22)}
+.stat{border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.86);box-shadow:0 5px 16px rgba(117,93,133,.09);backdrop-filter:blur(10px)}
+.stat small{color:#9a7e9a}
+.stat strong{color:#674c70}
+.timer-stat strong{color:#df6597}
+.icon-button{border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.9);color:#a65d87;box-shadow:0 4px 14px rgba(117,93,133,.1)}
+.challenge-panel{border:2px solid rgba(255,255,255,.94);border-radius:24px;background:rgba(255,250,253,.93);box-shadow:0 12px 32px rgba(130,93,131,.15);backdrop-filter:blur(12px)}
+.challenge-mode{color:#df6f9e}
+.challenge-prompt{color:#735275!important;text-shadow:none}
+.challenge-hint{color:#a183a0}
+.control-help,.mode-chip{border:1px solid rgba(255,255,255,.8);border-radius:18px;background:rgba(255,250,253,.9);color:#765c7b;box-shadow:0 4px 16px rgba(117,93,133,.1)}
+.mode-chip{color:#d96b9a}
+.round-message{color:#fff;text-shadow:0 3px 16px rgba(112,76,116,.4)}
+.overlay{background:rgba(222,197,220,.42);backdrop-filter:blur(11px)}
+.modal{border:2px solid #fff;border-radius:30px;background:#fff8fc;color:#704e70;box-shadow:0 22px 70px rgba(142,91,128,.22)}
+.start-modal h1.game-title{color:#865d83}
+.eyebrow{color:#dd719e}
+.mode-picker label{color:#a47d9d}
+.mode-picker select,.name-input{border:1px solid #f0c9dc;border-radius:15px;background:#fff;color:#765575;box-shadow:inset 0 1px 3px rgba(130,90,125,.05)}
+.mode-picker select:focus,.name-input:focus{outline:3px solid rgba(255,145,184,.22);border-color:#e98ab2}
+.primary-button{border-radius:17px;background:#ff86ae;color:#fff;box-shadow:0 6px 16px rgba(225,111,158,.22);letter-spacing:.045em}
+.primary-button:hover{background:#f575a3}
+.result-modal h2{color:#80577f}
+.result-numbers strong{color:#df6d9e}
+.result-numbers small{color:#a47d9d}
+.jump-button{border:2px solid #fff;background:#ff8fb6;color:#fff;box-shadow:0 5px 18px rgba(174,94,135,.22)}
+.move-button{border:1px solid #fff;border-radius:15px;background:rgba(255,248,252,.94);color:#a45e89;box-shadow:0 4px 12px rgba(174,94,135,.15)}
+.home-button{color:#a45e89}
+.toast{border:1px solid #fff;background:#fff7fb;color:#80577f;box-shadow:0 8px 24px rgba(130,85,120,.16)}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
