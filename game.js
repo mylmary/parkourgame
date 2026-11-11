@@ -150,7 +150,7 @@ function createMaryActor(displayName='PLAYER') {
     const foot=new THREE.Mesh(ball,skin);foot.position.set(0,-.29,.035);foot.scale.set(.135,.09,.16);foot.castShadow=true;pivot.add(foot);
     legPivots.push(pivot);
   }
-  add(new THREE.CylinderGeometry(.245,.44,.86,40),pink,[0,.91,0]);
+  add(new THREE.CylinderGeometry(.245,.42,.58,40),pink,[0,1.01,0]);
   add(ball,pink,[0,1.24,0],[.29,.25,.25]);
   const armPivots=[];
   for(const side of [-1,1]){
