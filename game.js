@@ -314,9 +314,26 @@ function setupChallenge() {
   });
 }
 
+function disposeActor(mesh) {
+  if(!mesh) return;
+  scene.remove(mesh);
+  mesh.traverse(object=>{
+    if(object.geometry) object.geometry.dispose();
+    if(object.material){
+      const materials=Array.isArray(object.material)?object.material:[object.material];
+      materials.forEach(material=>{
+        if(material.map) material.map.dispose();
+        material.dispose();
+      });
+    }
+  });
+}
 function spawnActors() {
-  actors.forEach(a=>scene.remove(a.mesh));
+  // Remove every character from the previous game before creating this game's cast.
+  actors.forEach(a=>disposeActor(a.mesh));
   actors.length=0;
+  disposeActor(player.mesh);
+  player.mesh=null;
   player.mesh=makeActor(0xffa0c2,true,playerName); scene.add(player.mesh);
   player.x=0; player.z=HALF+0.5; player.y=0; player.vx=0; player.vz=0; player.vy=0; player.alive=true; player.onGround=true;
   for(let i=0;i<9;i++){
