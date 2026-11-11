@@ -52,7 +52,7 @@ scene.background = new THREE.Color(0xc7eaf7);
 scene.fog = new THREE.Fog(0xc7eaf7, 30, 72);
 
 const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 120);
-camera.position.set(0, 13.2, 16.2);
+camera.position.set(0, 11.5, 13.2);
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.shadowMap.enabled = true;
@@ -184,6 +184,7 @@ function makeActor(color, isPlayer = false, displayName = '', outfitIndex = 0) {
     tag.scale.set(1.8,.45,1);tag.position.y=2.76;group.add(tag);
   }
   group.userData.limbs=[];
+  group.scale.setScalar(1.12);
   group.traverse(o=>{if(o.isMesh)o.castShadow=true;});
   return group;
 }
@@ -479,8 +480,8 @@ function updateFalling(dt) {
 function updateCamera(dt) {
   const target=new THREE.Vector3(player.x*.28,0,player.z*.28);
   camera.position.x=THREE.MathUtils.lerp(camera.position.x,target.x,Math.min(1,dt*2.5));
-  camera.position.z=THREE.MathUtils.lerp(camera.position.z,16.2+target.z,Math.min(1,dt*2.0));
-  camera.lookAt(player.x*.2,0,player.z*.2-1);
+  camera.position.z=THREE.MathUtils.lerp(camera.position.z,13.2+target.z,Math.min(1,dt*2.0));
+  camera.lookAt(player.x*.25,0,player.z*.25-.6);
 }
 function resize() {
   const rect=root.getBoundingClientRect();
