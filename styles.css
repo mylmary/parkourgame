@@ -144,3 +144,9 @@ button,select{font:inherit}
      arena itself receives its landscape dimensions from the rules above. */
   .mobile-controls{display:flex}
 }
+
+
+/* Keep the start control above the arena canvas and accept direct touch input. */
+#start-overlay{z-index:100;pointer-events:auto}
+#start-overlay .modal,#start-button{position:relative;z-index:101;pointer-events:auto}
+#start-button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
