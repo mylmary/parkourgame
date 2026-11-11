@@ -104,14 +104,16 @@ function makeLabel(text, color = '#17243a') {
   roundRect(ctx, 8, 8, 240, 112, 24);
   ctx.fill();
   ctx.fillStyle = color;
-  ctx.font = '900 54px Arial, sans-serif';
+  const labelText=String(text).slice(0, 9);
+  const isEmoji=/\p{Extended_Pictographic}/u.test(labelText);
+  ctx.font = isEmoji ? '900 104px Arial, sans-serif' : '900 72px Arial, sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(String(text).slice(0, 9), 128, 66);
+  ctx.fillText(labelText, 128, 66);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.set(1.12, 0.56, 1);
+  sprite.scale.set(1.78, 0.9, 1);
   sprite.position.y = 0.28;
   return sprite;
 }
@@ -216,12 +218,13 @@ function createArena() {
   }
 }
 
-const modes = ['colour','math','animal','word','shape','memory','odd','truefalse','pattern'];
+const modes = ['colour','math','animal','emoji','word','shape','memory','odd','truefalse','pattern'];
 const palettes = [
   {name:'PINK',hex:0xff7fa8},{name:'BLUE',hex:0x65bdf2},{name:'YELLOW',hex:0xffd45f},
   {name:'MINT',hex:0x65d5b0},{name:'PURPLE',hex:0xb28df2},{name:'PEACH',hex:0xffa078}
 ];
 const animals = [{n:'CAT',e:'🐱'},{n:'DOG',e:'🐶'},{n:'LION',e:'🦁'},{n:'FISH',e:'🐟'},{n:'BIRD',e:'🐦'},{n:'PANDA',e:'🐼'}];
+const emojis = [{n:'HEART',e:'❤️'},{n:'STAR',e:'⭐'},{n:'SUN',e:'☀️'},{n:'MOON',e:'🌙'},{n:'FLOWER',e:'🌸'},{n:'RAINBOW',e:'🌈'},{n:'PIZZA',e:'🍕'},{n:'BALL',e:'⚽'}];
 const shapes = [{n:'CIRCLE',e:'●'},{n:'STAR',e:'★'},{n:'SQUARE',e:'■'},{n:'HEART',e:'♥'},{n:'TRIANGLE',e:'▲'},{n:'DIAMOND',e:'◆'}];
 const words = [{n:'APPLE',e:'APPLE'},{n:'HOUSE',e:'HOUSE'},{n:'RIVER',e:'RIVER'},{n:'CLOUD',e:'CLOUD'},{n:'PLANT',e:'PLANT'},{n:'TRAIN',e:'TRAIN'}];
 const pick = arr => arr[Math.floor(Math.random()*arr.length)];
@@ -250,6 +253,10 @@ function makeChallenge(mode) {
     const target=pick(animals);
     return {mode,prompt:target.n,hint:'',answer:target.n,options:shuffle([target.n,...shuffle(animals.filter(a=>a.n!==target.n).map(a=>a.n)).slice(0,3)]),icons:Object.fromEntries(animals.map(a=>[a.n,a.e]))};
   }
+  if(mode==='emoji') {
+    const target=pick(emojis);
+    return {mode,prompt:'Find '+target.n+' '+target.e,hint:'',answer:target.n,options:shuffle([target.n,...shuffle(emojis.filter(e=>e.n!==target.n).map(e=>e.n)).slice(0,3)]),icons:Object.fromEntries(emojis.map(e=>[e.n,e.e]))};
+  }
   if(mode==='word') {
     const target=pick(words);
     return {mode,prompt:target.n,hint:'',answer:target.n,options:shuffle([target.n,...shuffle(words.filter(w=>w.n!==target.n).map(w=>w.n)).slice(0,3)])};
@@ -276,7 +283,7 @@ function makeChallenge(mode) {
   const answer=String(start+step*3);
   return {mode,prompt:'Complete the pattern: '+start+', '+(start+step)+', '+(start+2*step)+', ?',hint:'',answer,options:shuffle([answer,String(start+step*2),String(start+step*4),String(start+step*3+1)])};
 }
-const modeNames = {colour:'COLOUR RUSH',math:'MATH MADNESS',animal:'ANIMAL KINGDOM',word:'WORD CHALLENGE',shape:'SHAPE SHIFTER',memory:'MEMORY RUSH',odd:'ODD ONE OUT',truefalse:'TRUE OR FALSE',pattern:'PATTERN PANIC'};
+const modeNames = {colour:'COLOUR RUSH',math:'MATHS RUN',animal:'ANIMAL KINGDOM',emoji:'EMOJI',word:'WORD CHALLENGE',shape:'SHAPE SHIFTER',memory:'MEMORY RUSH',odd:'ODD ONE OUT',truefalse:'TRUE OR FALSE',pattern:'PATTERN PANIC'};
 function chooseMode() {
   if(selectedMode==='random') return pick(modes);
   return selectedMode;
@@ -304,6 +311,16 @@ function setupChallenge() {
   const values=[];
   while(values.length<tileMeshes.length) values.push(challenge.options[values.length%challenge.options.length]);
   const shuffled=shuffle(values);
+  // Keep correct answers farther from the starting edge, with fewer safe choices in later rounds.
+  const startX=0, startZ=HALF+0.5;
+  const farthestFirst=[...tileMeshes].sort((a,b)=>Math.hypot(b.x-startX,b.z-startZ)-Math.hypot(a.x-startX,a.z-startZ));
+  const baseSafeCount=Math.ceil(tileMeshes.length/challenge.options.length);
+  const safeCount=Math.max(6,baseSafeCount-Math.floor((round-1)*1.1));
+  const safeTiles=new Set(farthestFirst.slice(0,safeCount));
+  const distractors=shuffle(challenge.options.filter(value=>value!==challenge.answer));
+  let distractorIndex=0;
+  const arranged=tileMeshes.map(tile=>safeTiles.has(tile)?challenge.answer:distractors[distractorIndex++%distractors.length]);
+  const shuffled=shuffle(arranged);
   tileMeshes.forEach((tile,i)=>{
     tile.value=shuffled[i]; tile.falling=false; tile.mesh.visible=true; tile.edge.visible=true;
     tile.mesh.position.set(tile.x,0,tile.z); tile.edge.position.set(tile.x,-.15,tile.z);
@@ -402,7 +419,9 @@ function startRound(first=false) {
     player.mesh.visible=true;
     actors.forEach(a=>{if(a.alive){a.mesh.visible=true;a.x=(Math.random()-.5)*10;a.z=(Math.random()-.5)*10;a.target=null;a.decision=0;}});
   }
-  survivors=(player.alive?1:0)+actors.filter(a=>a.alive).length; timeLeft=7; phase='playing'; updateHUD();
+  actors.forEach(a=>{a.speed=(2.0+Math.random()*.65)*(1+(round-1)*.055);});
+  survivors=(player.alive?1:0)+actors.filter(a=>a.alive).length;
+  timeLeft=Math.max(4,7-(round-1)*0.3); phase='playing'; updateHUD();
   $('result-overlay').classList.add('hidden');
   showMessage('ROUND '+round+' — GO!');
 }
