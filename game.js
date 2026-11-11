@@ -146,9 +146,8 @@ function createMaryActor(displayName='PLAYER') {
   const legPivots=[];
   for(const x of [-.15,.15]){
     const pivot=new THREE.Group();pivot.position.set(x,.48,0);g.add(pivot);
-    add(ball,skin,[0,-.13,0],[.105,.22,.12]);
-    const leg=pivot.children[pivot.children.length-1];
-    add(ball,skin,[0,-.29,.035],[.135,.09,.16]);
+    const leg=new THREE.Mesh(ball,skin);leg.position.set(0,-.13,0);leg.scale.set(.105,.22,.12);leg.castShadow=true;pivot.add(leg);
+    const foot=new THREE.Mesh(ball,skin);foot.position.set(0,-.29,.035);foot.scale.set(.135,.09,.16);foot.castShadow=true;pivot.add(foot);
     legPivots.push(pivot);
   }
   add(new THREE.CylinderGeometry(.245,.44,.86,40),pink,[0,.91,0]);
@@ -156,8 +155,8 @@ function createMaryActor(displayName='PLAYER') {
   const armPivots=[];
   for(const side of [-1,1]){
     const pivot=new THREE.Group();pivot.position.set(side*.29,1.31,0);g.add(pivot);
-    add(ball,pink,[side*.035,-.23,0],[.13,.38,.15],[0,0,side*-.12]);
-    add(ball,skin,[side*.06,-.48,.015],[.12,.15,.13]);
+    const sleeve=new THREE.Mesh(ball,pink);sleeve.position.set(side*.035,-.23,0);sleeve.scale.set(.13,.38,.15);sleeve.rotation.z=side*-.12;sleeve.castShadow=true;pivot.add(sleeve);
+    const hand=new THREE.Mesh(ball,skin);hand.position.set(side*.06,-.48,.015);hand.scale.set(.12,.15,.13);hand.castShadow=true;pivot.add(hand);
     armPivots.push(pivot);
   }
   add(ball,skin,[0,1.37,.015],[.19,.18,.18]);add(ball,skin,[0,1.82,.035],[.51,.55,.43]);
