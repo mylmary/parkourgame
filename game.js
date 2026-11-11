@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/geometries/RoundedBoxGeometry.js';
 
 const $ = (id) => document.getElementById(id);
 let startInProgress = false;
@@ -192,7 +193,7 @@ function createArena() {
     child.traverse?.(o => { if(o.geometry) o.geometry.dispose(); if(o.material) { if(Array.isArray(o.material)) o.material.forEach(m=>m.dispose()); else o.material.dispose(); } });
   }
   tileMeshes.length = 0; tileLabels.length = 0;
-  const padGeo = new THREE.BoxGeometry(TILE, .28, TILE);
+  const padGeo = new RoundedBoxGeometry(TILE, .28, TILE, 3, .075);
   for (let row=0; row<GRID; row++) for (let col=0; col<GRID; col++) {
     const x = (col-(GRID-1)/2)*STEP, z = (row-(GRID-1)/2)*STEP;
     const material = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .58, metalness: .02 });
@@ -341,10 +342,9 @@ function chooseTarget() {
 }
 function iSeed(x,z){return x*1.7+z*.9;}
 function animateAvatar(mesh,running,t){
-  const limbs=mesh.userData.limbs;if(!limbs)return;
-  const swing=running?Math.sin(t)*.62:0;
-  limbs[0].rotation.x=swing;limbs[1].rotation.x=-swing;
-  limbs[2].rotation.x=-swing;limbs[3].rotation.x=swing;
+  const sway=running?Math.sin(t)*.035:Math.sin(t*.35)*.012;
+  mesh.rotation.z=sway;
+  mesh.scale.y=1+(running?Math.sin(t*2)*.018:0);
 }
 function directNPCs(dt) {
   for(const a of actors){
