@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#101b35">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta name="app-version" content="mary-parkour-20261111-4">
+  <meta name="app-version" content="mary-parkour-20261111-5">
   <title>Mary's Parkour game</title>
-  <link rel="stylesheet" href="./styles.css?v=mary-parkour-20261111-3">
+  <link rel="stylesheet" href="./styles.css?v=mary-parkour-20261111-5">
   <script type="importmap">
     {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}
   </script>
@@ -43,12 +43,12 @@
     </div>
 
     <div class="mobile-controls" id="mobile-controls">
-      <button class="jump-button" id="jump-button">JUMP</button>
+      <button type="button" class="jump-button" id="jump-button">JUMP</button>
       <div class="dpad" aria-label="Movement controls">
-        <button class="move-button move-up" data-direction="up" aria-label="Move forward">▲</button>
-        <button class="move-button move-left" data-direction="left" aria-label="Move left">◀</button>
-        <button class="move-button move-down" data-direction="down" aria-label="Move backward">▼</button>
-        <button class="move-button move-right" data-direction="right" aria-label="Move right">▶</button>
+        <button type="button" class="move-button move-up" data-direction="up" aria-label="Move forward">▲</button>
+        <button type="button" class="move-button move-left" data-direction="left" aria-label="Move left">◀</button>
+        <button type="button" class="move-button move-down" data-direction="down" aria-label="Move backward">▼</button>
+        <button type="button" class="move-button move-right" data-direction="right" aria-label="Move right">▶</button>
       </div>
     </div>
 
@@ -94,6 +94,6 @@
 
     <div class="toast" id="toast" role="status"></div>
   </main>
-  <script type="module" src="./game.js?v=mary-parkour-20261111-4"></script>
+  <script type="module" src="./game.js?v=mary-parkour-20261111-5"></script>
 </body>
 </html>
