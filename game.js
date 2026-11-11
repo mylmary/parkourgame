@@ -47,49 +47,52 @@ $('home-button').addEventListener('pointerup', event => {
 });
 const root = $('game-root');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x9dbbd1);
-scene.fog = new THREE.Fog(0x9dbbd1, 25, 58);
+scene.background = new THREE.Color(0xc7eaf7);
+scene.fog = new THREE.Fog(0xc7eaf7, 30, 72);
 
 const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 120);
-camera.position.set(0, 13, 16);
+camera.position.set(0, 12.5, 15.2);
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.18;
 root.appendChild(renderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xeaf7ff, 0x52627a, 2.1));
-const sun = new THREE.DirectionalLight(0xffffff, 2.4);
+scene.add(new THREE.HemisphereLight(0xfff5fb, 0x8bb8a8, 2.6));
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const sun = new THREE.DirectionalLight(0xfff7ef, 2.8);
 sun.position.set(-8, 18, 10);
 sun.castShadow = true;
-sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.mapSize.set(2048, 2048);
 sun.shadow.camera.left = -20; sun.shadow.camera.right = 20;
 sun.shadow.camera.top = 20; sun.shadow.camera.bottom = -20;
 scene.add(sun);
 
 const arena = new THREE.Group();
 scene.add(arena);
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(70, 70), new THREE.MeshStandardMaterial({ color: 0x71899a, roughness: 1 }));
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(70, 70), new THREE.MeshStandardMaterial({ color: 0xa8e6d0, roughness: 1 }));
 floor.rotation.x = -Math.PI / 2;
 floor.position.y = -2.5;
 floor.receiveShadow = true;
 scene.add(floor);
 
-const GRID = 10, TILE = 1.62, GAP = 0.09, STEP = TILE + GAP;
+const GRID = 10, TILE = 1.68, GAP = 0.08, STEP = TILE + GAP;
 const HALF = (GRID - 1) * STEP / 2;
 const tileMeshes = [];
 const tileLabels = [];
 const actors = [];
 const keys = new Set();
 const clock = new THREE.Clock();
-const player = { mesh: null, x: 0, z: 0, y: 0, vy: 0, alive: true, speed: 4.8, onGround: true, jumpQueued: false };
-let round = 0, timeLeft = 5, phase = 'menu', selectedMode = 'random', activeMode = 'colour';
-let challenge = null, survivors = 16, soundOn = true, lastTime = 0, roundResolveTimer = 0, betweenTimer = 0, playerName = 'Player';
+const player = { mesh: null, x: 0, z: 0, y: 0, vx: 0, vz: 0, vy: 0, alive: true, speed: 3.35, onGround: true, jumpQueued: false };
+let round = 0, timeLeft = 7, phase = 'menu', selectedMode = 'random', activeMode = 'colour';
+let challenge = null, survivors = 10, soundOn = true, lastTime = 0, roundResolveTimer = 0, betweenTimer = 0, playerName = 'Player';
 let joystickVector = { x: 0, y: 0 }, joystickPointer = null;
 const touchDirections = new Set();
-const npcNames = ['Milo','Zara','Kai','Luna','Theo','Mia','Leo','Nia','Ari','Ezra','Ivy','Noah','Ava','Finn','Remy'];
-const npcColors = [0xff776d,0xffbd4a,0x8c79ef,0x37c6a0,0x5aa8ef,0xe979b5,0xd1e45d,0xff8a45,0x63d7df,0xa0a8ff,0xe6a45c,0x65c48b,0xd78df0,0xf07158,0x7ca8dc];
+const npcNames = ['Luna','Mia','Daisy','Coco','Poppy','Ivy','Rosie','Bella','Mochi'];
+const npcColors = [0xff91b8,0xb89aff,0x72c9f2,0xffc46b,0x78d8b5,0xf28bbd,0x9aabff,0xff9c82,0x9bdc8a];
 
 function makeLabel(text, color = '#17243a') {
   const canvas = document.createElement('canvas');
@@ -113,53 +116,76 @@ function makeLabel(text, color = '#17243a') {
 }
 function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 
-function makeActor(color, isPlayer = false, displayName = '') {
-  // Block-built avatar inspired by the familiar Roblox toy-like proportions.
+function makeActor(color, isPlayer = false, displayName = '', outfitIndex = 0) {
+  // Soft, rounded toy-like characters with simple expressive faces.
   const group = new THREE.Group();
-  const shirt = new THREE.MeshStandardMaterial({ color, roughness: .72 });
-  const skin = new THREE.MeshStandardMaterial({ color: 0xf2bd91, roughness: .82 });
-  const pants = new THREE.MeshStandardMaterial({ color: 0x263d68, roughness: .8 });
-  const dark = new THREE.MeshStandardMaterial({ color: 0x17243a });
-  const torso = new THREE.Mesh(new THREE.BoxGeometry(.66,.72,.36), shirt);
-  torso.position.y=1.02; group.add(torso);
-  const head = new THREE.Mesh(new THREE.BoxGeometry(.54,.54,.54), skin);
+  const shirt = new THREE.MeshStandardMaterial({ color, roughness: .48 });
+  const skin = new THREE.MeshStandardMaterial({ color: pick([0xffd7bd,0xf6c7a8,0xeab28e,0xffe0c9]), roughness: .62 });
+  const pants = new THREE.MeshStandardMaterial({ color: pick([0x8f9fe8,0x83cdbb,0xf0a7c4,0x8db9df,0xe6b5a0]), roughness: .62 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x493c59, roughness: .5 });
+  const blush = new THREE.MeshStandardMaterial({ color: 0xff9bb5, roughness: .7 });
+  const sphere = new THREE.SphereGeometry(1, 20, 16);
+  const body = new THREE.Mesh(sphere, shirt);
+  body.scale.set(.39,.47,.29); body.position.y=1.02; group.add(body);
+  const collar = new THREE.Mesh(new THREE.TorusGeometry(.25,.055,8,24), new THREE.MeshStandardMaterial({color:0xfff2f7,roughness:.55}));
+  collar.position.set(0,1.32,.05); collar.rotation.x=.25; group.add(collar);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(.34,24,20), skin);
   head.position.y=1.68; group.add(head);
-  const hair = new THREE.Mesh(new THREE.BoxGeometry(.56,.16,.56), new THREE.MeshStandardMaterial({color:pick([0x34271f,0x553624,0x171717,0x8c5b32])}));
-  hair.position.y=2.02; group.add(hair);
-  for(const x of [-.12,.12]){
-    const eye=new THREE.Mesh(new THREE.BoxGeometry(.055,.065,.025),dark);
-    eye.position.set(x,1.72,.285);group.add(eye);
+  const hairColor = pick([0x593c38,0x342a3c,0x9a6545,0x4b334f,0x302a32]);
+  const hair = new THREE.Mesh(new THREE.SphereGeometry(.355,20,14,0,Math.PI*2,0,Math.PI*.55), new THREE.MeshStandardMaterial({color:hairColor,roughness:.78}));
+  hair.position.set(0,1.83,-.015); group.add(hair);
+  for(const x of [-.125,.125]){
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(.035,12,10),dark);
+    eye.position.set(x,1.7,.307);group.add(eye);
   }
-  const leftArm=new THREE.Group(),rightArm=new THREE.Group();
-  leftArm.position.set(-.43,1.32,0);rightArm.position.set(.43,1.32,0);
-  for(const arm of [leftArm,rightArm]){
-    const limb=new THREE.Mesh(new THREE.BoxGeometry(.22,.62,.25),skin);
-    limb.position.y=-.30;arm.add(limb);group.add(arm);
+  for(const x of [-.205,.205]){
+    const cheek=new THREE.Mesh(new THREE.SphereGeometry(.055,12,10),blush);
+    cheek.scale.set(1,.65,.25);cheek.position.set(x,1.61,.29);group.add(cheek);
   }
-  const leftLeg=new THREE.Group(),rightLeg=new THREE.Group();
-  leftLeg.position.set(-.19,.67,0);rightLeg.position.set(.19,.67,0);
-  for(const leg of [leftLeg,rightLeg]){
-    const limb=new THREE.Mesh(new THREE.BoxGeometry(.27,.64,.3),pants);
-    limb.position.y=-.31;leg.add(limb);group.add(leg);
+  const armGeo = new THREE.SphereGeometry(.14,16,12);
+  for(const side of [-1,1]){
+    const arm=new THREE.Mesh(armGeo,skin);arm.scale.set(.82,1.65,.82);arm.position.set(side*.43,1.03,.015);group.add(arm);
+    const leg=new THREE.Mesh(new THREE.SphereGeometry(.14,16,12),pants);leg.scale.set(.9,1.65,1);leg.position.set(side*.17,.43,0);group.add(leg);
+    const shoe=new THREE.Mesh(new THREE.SphereGeometry(.15,16,12),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.48}));
+    shoe.scale.set(1,.58,1.35);shoe.position.set(side*.17,.18,.055);group.add(shoe);
+  }
+  // A little bow or flower gives each competitor a recognisable outfit.
+  const accessoryColors=[0xff6fa8,0xffd05d,0x8d83ff,0x6bd5bd,0xff9b72];
+  const accent=new THREE.MeshStandardMaterial({color:accessoryColors[outfitIndex%accessoryColors.length],roughness:.5});
+  if(outfitIndex%3===0){
+    for(const side of [-1,1]){
+      const loop=new THREE.Mesh(new THREE.SphereGeometry(.12,14,10),accent);
+      loop.scale.set(1,.68,.38);loop.position.set(side*.19,2.02,.035);group.add(loop);
+    }
+    const knot=new THREE.Mesh(new THREE.SphereGeometry(.07,12,10),accent);knot.position.set(0,2.02,.08);group.add(knot);
+  } else if(outfitIndex%3===1){
+    const hat=new THREE.Mesh(new THREE.SphereGeometry(.36,18,10,0,Math.PI*2,0,Math.PI*.5),accent);
+    hat.scale.y=.52;hat.position.set(0,1.99,0);group.add(hat);
+    const pom=new THREE.Mesh(new THREE.SphereGeometry(.09,12,10),new THREE.MeshStandardMaterial({color:0xffffff}));
+    pom.position.set(0,2.16,0);group.add(pom);
+  } else {
+    for(const side of [-1,1]){
+      const ear=new THREE.Mesh(new THREE.SphereGeometry(.105,14,10),accent);
+      ear.scale.set(.62,1.8,.55);ear.position.set(side*.2,2.08,0);group.add(ear);
+    }
   }
   if(isPlayer){
-    const ring=new THREE.Mesh(new THREE.TorusGeometry(.48,.045,8,24),new THREE.MeshStandardMaterial({color:0x7ff0ba,emissive:0x174d38}));
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(.48,.045,8,24),new THREE.MeshStandardMaterial({color:0x75e6c0,emissive:0x164b39}));
     ring.rotation.x=Math.PI/2;ring.position.y=.035;group.add(ring);
-    const halo=new THREE.Mesh(new THREE.TorusGeometry(.34,.065,10,32),new THREE.MeshStandardMaterial({color:0xffd75e,emissive:0x9b650e,emissiveIntensity:.7,metalness:.55,roughness:.25}));
-    halo.position.y=2.22;halo.rotation.x=Math.PI/2;group.add(halo);
+    const halo=new THREE.Mesh(new THREE.TorusGeometry(.34,.055,10,32),new THREE.MeshStandardMaterial({color:0xffd66f,emissive:0x79521b,emissiveIntensity:.35,roughness:.4}));
+    halo.position.y=2.25;halo.rotation.x=Math.PI/2;group.add(halo);
     const nameCanvas=document.createElement('canvas');nameCanvas.width=512;nameCanvas.height=128;
-    const ctx=nameCanvas.getContext('2d');ctx.fillStyle='rgba(10,25,45,.84)';roundRect(ctx,8,8,496,112,28);ctx.fill();
-    ctx.strokeStyle='#ffd75e';ctx.lineWidth=5;roundRect(ctx,8,8,496,112,28);ctx.stroke();
-    ctx.fillStyle='#ffffff';ctx.font='900 48px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText((displayName||'PLAYER').toUpperCase(),256,65,450);
+    const ctx=nameCanvas.getContext('2d');ctx.fillStyle='rgba(255,255,255,.94)';roundRect(ctx,8,8,496,112,28);ctx.fill();
+    ctx.strokeStyle='#ff91b8';ctx.lineWidth=5;roundRect(ctx,8,8,496,112,28);ctx.stroke();
+    ctx.fillStyle='#65445f';ctx.font='900 48px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText((displayName||'PLAYER').toUpperCase(),256,65,450);
     const tagTexture=new THREE.CanvasTexture(nameCanvas);tagTexture.colorSpace=THREE.SRGBColorSpace;
     const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTexture,transparent:true,depthTest:false}));
-    tag.scale.set(1.8,.45,1);tag.position.y=2.72;group.add(tag);
+    tag.scale.set(1.8,.45,1);tag.position.y=2.76;group.add(tag);
   }
-  group.userData.limbs=[leftArm,rightArm,leftLeg,rightLeg];
+  group.userData.limbs=[];
   group.traverse(o=>{if(o.isMesh)o.castShadow=true;});
   return group;
 }
-
 function createArena() {
   while (arena.children.length) {
     const child = arena.children.pop();
@@ -177,7 +203,7 @@ function createArena() {
     edge.position.set(x,-.15,z); arena.add(edge);
     tileMeshes.push({ mesh, edge, x, z, label: null, value: null, falling: false, originalY: 0 });
   }
-  const wallMat = new THREE.MeshStandardMaterial({color:0x526d83, roughness:.9});
+  const wallMat = new THREE.MeshStandardMaterial({color:0xffc3d8, roughness:.72});
   const railGeo = new THREE.BoxGeometry(17,.35,.35);
   for (const z of [-HALF-1.3, HALF+1.3]) {
     const rail = new THREE.Mesh(railGeo, wallMat); rail.position.set(0,.05,z); arena.add(rail);
@@ -190,8 +216,8 @@ function createArena() {
 
 const modes = ['colour','math','animal','word','shape','memory','odd','truefalse','pattern'];
 const palettes = [
-  {name:'RED',hex:0xf45d65},{name:'BLUE',hex:0x438fe8},{name:'YELLOW',hex:0xf4c84d},
-  {name:'GREEN',hex:0x35bd83},{name:'PURPLE',hex:0x9a75e8},{name:'ORANGE',hex:0xf08a45}
+  {name:'PINK',hex:0xff7fa8},{name:'BLUE',hex:0x65bdf2},{name:'YELLOW',hex:0xffd45f},
+  {name:'MINT',hex:0x65d5b0},{name:'PURPLE',hex:0xb28df2},{name:'PEACH',hex:0xffa078}
 ];
 const animals = [{n:'CAT',e:'🐱'},{n:'DOG',e:'🐶'},{n:'LION',e:'🦁'},{n:'FISH',e:'🐟'},{n:'BIRD',e:'🐦'},{n:'PANDA',e:'🐼'}];
 const shapes = [{n:'CIRCLE',e:'●'},{n:'STAR',e:'★'},{n:'SQUARE',e:'■'},{n:'HEART',e:'♥'},{n:'TRIANGLE',e:'▲'},{n:'DIAMOND',e:'◆'}];
@@ -256,7 +282,7 @@ function chooseMode() {
 function colorFor(value) {
   if(challenge.mode==='colour') return challenge.colors[value] || 0x6e7f91;
   if(challenge.mode==='truefalse') return value==='TRUE'?0x39c58b:0xf06a72;
-  const palette=[0x4e9de8,0xf0ad4e,0x9a7be8,0x42b9a1];
+  const palette=[0x73bff0,0xffc36c,0xb69af2,0x72d8b5];
   return palette[Math.max(0,challenge.options.indexOf(value))] || 0x7d91a8;
 }
 function labelFor(value) {
@@ -271,7 +297,7 @@ function setupChallenge() {
   const promptEl=$('challenge-prompt');
   promptEl.textContent=challenge.prompt;
   $('challenge-hint').textContent='';
-  const contrastingText={RED:'#438fe8',BLUE:'#ffd34f',YELLOW:'#f45d65',GREEN:'#a88aff',PURPLE:'#ffd34f',ORANGE:'#438fe8'};
+  const contrastingText={PINK:'#ff9bb9',BLUE:'#75c9f5',YELLOW:'#ffd45f',MINT:'#78dfbc',PURPLE:'#c0a5ff',PEACH:'#ffad8c'};
   promptEl.style.color=activeMode==='colour'?(contrastingText[challenge.answer]||'#ffffff'):'#ffffff';
   const values=[];
   while(values.length<tileMeshes.length) values.push(challenge.options[values.length%challenge.options.length]);
@@ -290,12 +316,12 @@ function setupChallenge() {
 function spawnActors() {
   actors.forEach(a=>scene.remove(a.mesh));
   actors.length=0;
-  player.mesh=makeActor(0x17bd85,true,playerName); scene.add(player.mesh);
-  player.x=0; player.z=HALF+0.5; player.y=0; player.vy=0; player.alive=true; player.onGround=true;
-  for(let i=0;i<15;i++){
-    const mesh=makeActor(npcColors[i]);
+  player.mesh=makeActor(0xffa0c2,true,playerName); scene.add(player.mesh);
+  player.x=0; player.z=HALF+0.5; player.y=0; player.vx=0; player.vz=0; player.vy=0; player.alive=true; player.onGround=true;
+  for(let i=0;i<9;i++){
+    const mesh=makeActor(npcColors[i],false,npcNames[i],i);
     scene.add(mesh);
-    actors.push({mesh,name:npcNames[i],alive:true,x:(Math.random()-.5)*12,z:(Math.random()-.5)*12,target:null,speed:3.3+Math.random()*1.5,decision:0});
+    actors.push({mesh,name:npcNames[i],alive:true,x:(Math.random()-.5)*12,z:(Math.random()-.5)*12,target:null,speed:2.0+Math.random()*.65,decision:0});
   }
   updateActorPosition();
 }
@@ -354,11 +380,11 @@ function startRound(first=false) {
   setupChallenge();
   if(first||!player.alive) spawnActors();
   else {
-    player.x=0; player.z=HALF+.3; player.y=0; player.vy=0; player.alive=true;
+    player.x=0; player.z=HALF+.3; player.y=0; player.vx=0; player.vz=0; player.vy=0; player.alive=true;
     player.mesh.visible=true;
     actors.forEach(a=>{if(a.alive){a.mesh.visible=true;a.x=(Math.random()-.5)*10;a.z=(Math.random()-.5)*10;a.target=null;a.decision=0;}});
   }
-  survivors=(player.alive?1:0)+actors.filter(a=>a.alive).length; timeLeft=5; phase='playing'; updateHUD();
+  survivors=(player.alive?1:0)+actors.filter(a=>a.alive).length; timeLeft=7; phase='playing'; updateHUD();
   $('result-overlay').classList.add('hidden');
   showMessage('ROUND '+round+' — GO!');
 }
@@ -410,12 +436,16 @@ function movePlayer(dt) {
   x+=joystickVector.x; z+=joystickVector.y;
   const len=Math.hypot(x,z);
   if(len>1){x/=len;z/=len;}
-  player.x+=x*player.speed*dt; player.z+=z*player.speed*dt;
+  const desiredVX=x*player.speed, desiredVZ=z*player.speed;
+  const response=len>.05?Math.min(1,dt*7):Math.min(1,dt*5);
+  player.vx=THREE.MathUtils.lerp(player.vx,desiredVX,response);
+  player.vz=THREE.MathUtils.lerp(player.vz,desiredVZ,response);
+  player.x+=player.vx*dt; player.z+=player.vz*dt;
   player.x=THREE.MathUtils.clamp(player.x,-HALF-.4,HALF+.4);
   player.z=THREE.MathUtils.clamp(player.z,-HALF-.4,HALF+.4);
-  if(player.jumpQueued&&player.onGround){player.vy=7.4;player.onGround=false;}
+  if(player.jumpQueued&&player.onGround){player.vy=6.2;player.onGround=false;}
   player.jumpQueued=false;
-  player.vy-=18*dt; player.y+=player.vy*dt;
+  player.vy-=15*dt; player.y+=player.vy*dt;
   if(player.y<=0){player.y=0;player.vy=0;player.onGround=true;}
   player.mesh.position.set(player.x,player.y,player.z);
   if(len>.05) player.mesh.rotation.y=Math.atan2(x,z);
@@ -432,7 +462,7 @@ function updateFalling(dt) {
 function updateCamera(dt) {
   const target=new THREE.Vector3(player.x*.28,0,player.z*.28);
   camera.position.x=THREE.MathUtils.lerp(camera.position.x,target.x,Math.min(1,dt*2.5));
-  camera.position.z=THREE.MathUtils.lerp(camera.position.z,16+target.z,Math.min(1,dt*2.5));
+  camera.position.z=THREE.MathUtils.lerp(camera.position.z,15.2+target.z,Math.min(1,dt*2.0));
   camera.lookAt(player.x*.2,0,player.z*.2-1);
 }
 function resize() {
@@ -441,7 +471,7 @@ function resize() {
   const h=Math.max(1,Math.round(rect.height||root.clientHeight||window.innerHeight));
   camera.aspect=w/h;
   camera.updateProjectionMatrix();
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.7));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   renderer.setSize(w,h,false);
 }
 let resizeFrame=0;
