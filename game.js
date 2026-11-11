@@ -163,7 +163,7 @@ function createMaryActor(displayName='PLAYER') {
   for(const x of [-.045,.045])front(new THREE.CircleGeometry(.012,12),dark,-.23+x,.83,.34);
   front(new THREE.BoxGeometry(.12,.12,.035),mat(0xe84e9c,.25),.06,.84,.34,1,1,1,Math.PI/4);front(new THREE.BoxGeometry(.055,.055,.04),gold,.06,.84,.365,1,1,1,Math.PI/4);
   const star=new THREE.Shape();for(let i=0;i<10;i++){const a=Math.PI/2+i*Math.PI/5,r=i%2===0?.17:.078,x=Math.cos(a)*r,y=Math.sin(a)*r;if(i===0)star.moveTo(x,y);else star.lineTo(x,y);}star.closePath();front(new THREE.ExtrudeGeometry(star,{depth:.025,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.012,bevelThickness:.008}),mat(0x45c8df,.28),.25,.77,.32,1,1,1,-.12);
-  for(const side of [-1,1])front(ball,mat(0x9b59cf,.3),-.19+side*.075,.52,.32,[.075,.052,.026],[1,1,1][0],1,1,side*-.5);
+  for(const side of [-1,1])front(ball,mat(0x9b59cf,.3),-.19+side*.075,.52,.32,.075,.052,.026,side*-.5);
   g.scale.setScalar(1.12);g.userData.limbs=[];return g;
 }
 
