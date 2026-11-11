@@ -116,7 +116,7 @@ function makeLabel(text, color = '#17243a') {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   if (isPictogram) {
-    ctx.font = '200px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+    ctx.font = '170px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
     ctx.fillText(labelText, 128, 130);
   } else if (isNumber) {
     ctx.fillStyle = color;
@@ -131,7 +131,7 @@ function makeLabel(text, color = '#17243a') {
   texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.set((isPictogram || isNumber) ? 1.94 : 1.78, (isPictogram || isNumber) ? 1.94 : 0.89, 1);
+  sprite.scale.set(isPictogram ? 1.58 : isNumber ? 1.94 : 1.78, isPictogram ? 1.58 : isNumber ? 1.94 : 0.89, 1);
   sprite.position.y = 0.28;
   return sprite;
 }
