@@ -52,7 +52,7 @@ scene.background = new THREE.Color(0xc7eaf7);
 scene.fog = new THREE.Fog(0xc7eaf7, 30, 72);
 
 const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 120);
-camera.position.set(0, 12.5, 15.2);
+camera.position.set(0, 13.2, 16.2);
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.shadowMap.enabled = true;
@@ -80,7 +80,7 @@ floor.position.y = -2.5;
 floor.receiveShadow = true;
 scene.add(floor);
 
-const GRID = 10, TILE = 1.68, GAP = 0.08, STEP = TILE + GAP;
+const GRID = 8, TILE = 2.22, GAP = 0.14, STEP = TILE + GAP;
 const HALF = (GRID - 1) * STEP / 2;
 const tileMeshes = [];
 const tileLabels = [];
@@ -205,11 +205,11 @@ function createArena() {
     tileMeshes.push({ mesh, edge, x, z, label: null, value: null, falling: false, originalY: 0 });
   }
   const wallMat = new THREE.MeshStandardMaterial({color:0xffc3d8, roughness:.72});
-  const railGeo = new THREE.BoxGeometry(17,.35,.35);
+  const railGeo = new THREE.BoxGeometry(GRID*STEP,.35,.35);
   for (const z of [-HALF-1.3, HALF+1.3]) {
     const rail = new THREE.Mesh(railGeo, wallMat); rail.position.set(0,.05,z); arena.add(rail);
   }
-  const sideGeo = new THREE.BoxGeometry(.35,.35,17);
+  const sideGeo = new THREE.BoxGeometry(.35,.35,GRID*STEP);
   for (const x of [-HALF-1.3, HALF+1.3]) {
     const rail = new THREE.Mesh(sideGeo, wallMat); rail.position.set(x,.05,0); arena.add(rail);
   }
@@ -462,7 +462,7 @@ function updateFalling(dt) {
 function updateCamera(dt) {
   const target=new THREE.Vector3(player.x*.28,0,player.z*.28);
   camera.position.x=THREE.MathUtils.lerp(camera.position.x,target.x,Math.min(1,dt*2.5));
-  camera.position.z=THREE.MathUtils.lerp(camera.position.z,15.2+target.z,Math.min(1,dt*2.0));
+  camera.position.z=THREE.MathUtils.lerp(camera.position.z,16.2+target.z,Math.min(1,dt*2.0));
   camera.lookAt(player.x*.2,0,player.z*.2-1);
 }
 function resize() {
