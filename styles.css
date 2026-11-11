@@ -66,3 +66,81 @@ button,select{font:inherit}
 }
 @media(max-height:650px){.challenge-panel{top:65px}.mobile-controls{bottom:12px}.bottom-hud{bottom:8px}.modal{padding:22px}}
 
+
+
+/* Landscape-first mobile layout, including portrait devices rotated with CSS. */
+#game-shell{min-height:0;height:100vh;height:100dvh}
+#game-root{inset:0;overflow:hidden}
+#game-root canvas{width:100%;height:100%;display:block}
+.mobile-controls{z-index:6;gap:clamp(12px,4vw,40px);padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom))}
+.jump-button,.move-button{ -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none}
+.jump-button{flex:0 0 auto;width:clamp(64px,16vh,84px);height:clamp(64px,16vh,84px)}
+.dpad{flex:0 0 auto;width:clamp(132px,34vh,156px);height:clamp(116px,31vh,136px);grid-template-columns:repeat(3,minmax(38px,1fr));grid-template-rows:repeat(3,minmax(34px,1fr));gap:3px}
+.move-button{min-width:38px;min-height:34px;font-size:clamp(16px,4vh,20px)}
+.bottom-hud{z-index:2}
+.toast{max-width:min(80vw,420px);text-align:center;bottom:max(14px,env(safe-area-inset-bottom))}
+.overlay{padding:max(12px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+.modal{max-height:100%;overflow-y:auto;overscroll-behavior:contain}
+@media (orientation:portrait) and (max-width:900px){
+  #game-shell{position:fixed;top:0;left:0;width:100dvh;height:100vw;min-height:0;transform-origin:top left;transform:rotate(90deg) translateY(-100%)}
+  .topbar{padding:7px 14px;min-height:48px}
+  .brand{font-size:10px;gap:7px}
+  .brand-mark{width:28px;height:28px;font-size:17px}
+  .top-stats{gap:5px}
+  .stat{min-width:52px;padding:5px 8px}
+  .stat small{font-size:7px}
+  .stat strong{font-size:14px}
+  .icon-button{width:30px;height:30px}
+  .challenge-panel{top:54px;left:50%;width:min(390px,48%);padding:7px 12px 8px}
+  .challenge-mode{font-size:8px}
+  .challenge-prompt{font-size:clamp(17px,4.6vh,23px);margin-top:3px}
+  .challenge-hint{font-size:9px;margin-top:2px}
+  .mobile-controls{display:flex;bottom:max(9px,env(safe-area-inset-bottom));padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right))}
+  .jump-button{width:clamp(60px,17vh,76px);height:clamp(60px,17vh,76px)}
+  .dpad{width:clamp(126px,34vh,146px);height:clamp(112px,31vh,128px);grid-template-columns:repeat(3,minmax(36px,1fr));grid-template-rows:repeat(3,minmax(32px,1fr))}
+  .move-button{min-width:36px;min-height:32px}
+  .bottom-hud{display:none}
+  .round-message{top:48%;font-size:clamp(22px,6vh,40px)}
+  .overlay{padding:10px 16px}
+  .modal{width:min(440px,75%);padding:clamp(14px,3vh,24px)}
+  .start-modal h1{font-size:clamp(26px,7vh,38px);margin:5px 0 12px}
+  .mode-picker{margin:8px 0}
+  .mode-picker select,.name-input{padding:9px 11px}
+  .primary-button{padding:11px 14px}
+  .result-modal h2{font-size:clamp(25px,7vh,34px)}
+  .result-numbers{margin:12px 0;gap:32px}
+  .toast{bottom:12px}
+}
+@media (orientation:landscape) and (max-height:520px){
+  #game-shell{min-height:0}
+  .topbar{padding:7px 14px;min-height:48px}
+  .brand{font-size:10px;gap:7px}
+  .brand-mark{width:28px;height:28px;font-size:17px}
+  .top-stats{gap:5px}
+  .stat{min-width:52px;padding:5px 8px}
+  .stat small{font-size:7px}
+  .stat strong{font-size:14px}
+  .icon-button{width:30px;height:30px}
+  .challenge-panel{top:54px;width:min(390px,48%);padding:7px 12px 8px}
+  .challenge-mode{font-size:8px}
+  .challenge-prompt{font-size:clamp(17px,4.6vh,23px);margin-top:3px}
+  .challenge-hint{font-size:9px;margin-top:2px}
+  .mobile-controls{display:flex;bottom:max(9px,env(safe-area-inset-bottom))}
+  .jump-button{width:clamp(60px,17vh,76px);height:clamp(60px,17vh,76px)}
+  .dpad{width:clamp(126px,34vh,146px);height:clamp(112px,31vh,128px)}
+  .bottom-hud{display:none}
+  .round-message{top:48%;font-size:clamp(22px,6vh,40px)}
+  .overlay{padding:10px 16px}
+  .modal{width:min(440px,75%);padding:clamp(14px,3vh,24px)}
+  .start-modal h1{font-size:clamp(26px,7vh,38px);margin:5px 0 12px}
+  .mode-picker{margin:8px 0}
+  .mode-picker select,.name-input{padding:9px 11px}
+  .primary-button{padding:11px 14px}
+  .result-modal h2{font-size:clamp(25px,7vh,34px)}
+  .result-numbers{margin:12px 0;gap:32px}
+}
+@media (max-width:700px) and (orientation:portrait){
+  /* Preserve compact text sizes on the original portrait viewport; the rotated
+     arena itself receives its landscape dimensions from the rules above. */
+  .mobile-controls{display:flex}
+}
