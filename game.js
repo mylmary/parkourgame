@@ -120,8 +120,11 @@ function makeLabel(text, color = '#17243a') {
     ctx.fillText(labelText, 128, 130);
   } else if (isNumber) {
     ctx.fillStyle = color;
-    ctx.font = '900 184px Arial, sans-serif';
-    ctx.fillText(labelText, 128, 130);
+    // Larger numerals for quick reading; scale down only when several digits
+    // need to fit so the full answer remains visible.
+    const digitSize = labelText.length <= 2 ? 220 : labelText.length === 3 ? 165 : 125;
+    ctx.font = `900 ${digitSize}px Arial, sans-serif`;
+    ctx.fillText(labelText, 128, 130, 224);
   } else {
     ctx.fillStyle = color;
     ctx.font = '900 54px Arial, sans-serif';
@@ -131,7 +134,7 @@ function makeLabel(text, color = '#17243a') {
   texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.set(isPictogram ? 1.02 : isNumber ? 1.94 : 1.78, isPictogram ? 1.02 : isNumber ? 1.94 : 0.89, 1);
+  sprite.scale.set(isPictogram ? 1.02 : isNumber ? 2.28 : 1.78, isPictogram ? 1.02 : isNumber ? 2.28 : 0.89, 1);
   sprite.position.y = 0.28;
   return sprite;
 }
