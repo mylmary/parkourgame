@@ -105,15 +105,15 @@ function makeLabel(text, color = '#17243a') {
   ctx.fill();
   ctx.fillStyle = color;
   const labelText=String(text).slice(0, 9);
-  const isEmoji=/\p{Extended_Pictographic}/u.test(labelText);
-  ctx.font = isEmoji ? '900 104px Arial, sans-serif' : '900 72px Arial, sans-serif';
+  const isLargeVisual=/\p{Extended_Pictographic}/u.test(labelText) || /^\d+$/.test(labelText) || /^[●★■♥▲◆]$/u.test(labelText);
+  ctx.font = isLargeVisual ? '900 104px Arial, sans-serif' : '900 54px Arial, sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(labelText, 128, 66);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.set(1.78, 0.9, 1);
+  sprite.scale.set(isLargeVisual ? 1.78 : 1.12, isLargeVisual ? 0.9 : 0.56, 1);
   sprite.position.y = 0.28;
   return sprite;
 }
