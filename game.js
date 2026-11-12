@@ -126,14 +126,16 @@ function makeLabel(text, color = '#17243a') {
     ctx.fillText(labelText, 128, 130, 224);
   } else {
     ctx.fillStyle = color;
-    ctx.font = '900 54px Arial, sans-serif';
-    ctx.fillText(labelText, 128, 66);
+    const wordSize = activeMode === 'odd' ? 38 : 54;
+    ctx.font = `900 ${wordSize}px Arial, sans-serif`;
+    ctx.fillText(labelText, 128, 66, 224);
   }
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.set(isPictogram ? 1.02 : isNumber ? 0.95 : 1.78, isPictogram ? 1.02 : isNumber ? 0.95 : 0.89, 1);
+  const wordScale = activeMode === 'odd' ? 1.38 : 1.78;
+  sprite.scale.set(isPictogram ? 1.02 : isNumber ? 0.95 : wordScale, isPictogram ? 1.02 : isNumber ? 0.95 : (activeMode === 'odd' ? 0.72 : 0.89), 1);
   sprite.position.y = 0.28;
   return sprite;
 }
@@ -415,6 +417,7 @@ function setupChallenge() {
   $('mode-chip').textContent=modeNames[activeMode];
   const promptEl=$('challenge-prompt');
   promptEl.textContent=challenge.prompt;
+  promptEl.style.fontSize=activeMode==='odd'?'clamp(12px, 2vw, 17px)':'';
   $('challenge-hint').textContent='';
   const contrastingText={PINK:'#ff9bb9',BLUE:'#75c9f5',YELLOW:'#ffd45f',MINT:'#78dfbc',PURPLE:'#c0a5ff',PEACH:'#ffad8c'};
   promptEl.style.color=activeMode==='colour'?(contrastingText[challenge.answer]||'#ffffff'):'#ffffff';
