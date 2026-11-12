@@ -630,22 +630,73 @@ function startVictoryCelebration(){
   rosePetalTimer=setTimeout(()=>layer.replaceChildren(),7000);
 }
 let showcaseMary=null, showcaseRenderer=null, showcaseScene=null, showcaseCamera=null, showcaseDanceTime=0;
+function enhanceVictoryMary(mesh){
+  if(!mesh) return;
+  const detail=(geometry,material,position,scale,rotation)=>{
+    const part=new THREE.Mesh(geometry,material);
+    part.position.set(...position);
+    if(scale) part.scale.set(...scale);
+    if(rotation) part.rotation.set(...rotation);
+    mesh.add(part);
+    return part;
+  };
+  const eyeMat=new THREE.MeshStandardMaterial({color:0x123b83,roughness:.2});
+  const shineMat=new THREE.MeshBasicMaterial({color:0xffffff});
+  const goldGlow=new THREE.MeshBasicMaterial({color:0xffd66e,transparent:true,opacity:.32});
+  const dressTrim=new THREE.MeshStandardMaterial({color:0xffc3df,roughness:.28,metalness:.08});
+  const featherMat=new THREE.MeshStandardMaterial({color:0xfff3e9,roughness:.38});
+  // Give Mary's blue eyes a clear pupil and a small catchlight.
+  for(const x of [-.215,.215]){
+    detail(new THREE.SphereGeometry(1,20,16),eyeMat,[x,1.87,.512],[.046,.073,.022]);
+    detail(new THREE.SphereGeometry(1,16,12),shineMat,[x-.014,1.905,.535],[.018,.024,.012]);
+  }
+  // Fine satin edging makes the pink dress silhouette easier to read.
+  detail(new THREE.TorusGeometry(.385,.022,10,48),dressTrim,[0,.755,0],null,[Math.PI/2,0,0]);
+  detail(new THREE.TorusGeometry(.29,.012,8,40),dressTrim,[0,1.285,0],null,[Math.PI/2,0,0]);
+  // A soft second halo ring adds a gentle golden glow without changing its shape.
+  detail(new THREE.TorusGeometry(.455,.022,10,48),goldGlow,[0,2.66,-.015],null,[Math.PI/2,0,0]);
+  // Small feather forms add definition to the existing cream wings.
+  for(const side of [-1,1]){
+    for(let k=0;k<3;k++){
+      const feather=detail(new THREE.SphereGeometry(1,16,12),featherMat,
+        [side*(.59+.075*k),1.24-.105*k,-.305],
+        [.105,.19,.055],[0,0,side*-.42]);
+    }
+  }
+  // Subtle curved strands give the golden hair a more finished surface.
+  const strandMat=new THREE.MeshStandardMaterial({color:0xffdf70,roughness:.32});
+  for(let k=0;k<3;k++){
+    const x=-.22+k*.22;
+    const curve=new THREE.CatmullRomCurve3([
+      new THREE.Vector3(x-.10,2.30,.34),
+      new THREE.Vector3(x-.04,2.34,.39),
+      new THREE.Vector3(x+.05,2.30,.40),
+      new THREE.Vector3(x+.12,2.22,.36)
+    ]);
+    detail(new THREE.TubeGeometry(curve,18,.012,7,false),strandMat,[0,0,0]);
+  }
+}
 function setupVictoryDisplay(){
   const mount=$('victory-character');
   if(!mount||showcaseRenderer) return;
   showcaseScene=new THREE.Scene();
   showcaseCamera=new THREE.PerspectiveCamera(32,1,.1,50);
-  showcaseCamera.position.set(0,1.55,7.2);
-  showcaseCamera.lookAt(0,1.35,0);
+  showcaseCamera.position.set(0,1.52,5.95);
+  showcaseCamera.lookAt(0,1.42,0);
   showcaseRenderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});
-  showcaseRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+  showcaseRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   showcaseRenderer.setSize(220,190);
   showcaseRenderer.outputColorSpace=THREE.SRGBColorSpace;
+  showcaseRenderer.toneMapping=THREE.ACESFilmicToneMapping;
+  showcaseRenderer.toneMappingExposure=1.12;
   showcaseRenderer.setClearColor(0x000000,0);
   showcaseRenderer.shadowMap.enabled=false;
-  showcaseScene.add(new THREE.HemisphereLight(0xfff5fb,0x8bb8a8,2.3));
-  const key=new THREE.DirectionalLight(0xffffff,2.4);key.position.set(-3,5,6);showcaseScene.add(key);
+  showcaseScene.add(new THREE.HemisphereLight(0xfff5fb,0x9a7f91,2.5));
+  const key=new THREE.DirectionalLight(0xfff5e9,3.0);key.position.set(-3,5,6);showcaseScene.add(key);
+  const fill=new THREE.DirectionalLight(0xffb9d8,1.15);fill.position.set(3,2,4);showcaseScene.add(fill);
+  const rim=new THREE.DirectionalLight(0xffd978,1.35);rim.position.set(0,4,-4);showcaseScene.add(rim);
   showcaseMary=createMaryActor(playerName);
+  enhanceVictoryMary(showcaseMary);
   showcaseMary.position.set(0,-.02,0);
   showcaseScene.add(showcaseMary);
   mount.appendChild(showcaseRenderer.domElement);
