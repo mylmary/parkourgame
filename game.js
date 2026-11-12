@@ -401,7 +401,7 @@ function makeChallenge(mode) {
   const answer=String(start+step*3);
   return {mode,prompt:'Complete the pattern: '+start+', '+(start+step)+', '+(start+2*step)+', ?',hint:'',answer,options:shuffle([answer,String(start+step*2),String(start+step*4),String(start+step*3+1)])};
 }
-const modeNames = {colour:'COLOUR RUSH',math:'MATHS RUN',animal:'ANIMAL KINGDOM',emoji:'EMOJI',word:'WORD CHALLENGE',shape:'SHAPE SHIFTER',memory:'MEMORY RUSH',lava:'FLOOR IS LAVA',odd:'ODD ONE OUT',truefalse:'TRUE OR FALSE',pattern:'PATTERN PANIC'};
+const modeNames = {colour:'COLOUR RUSH',math:'MATHS RUN',animal:'ANIMAL KINGDOM',emoji:'EMOJI',word:'WORD CHALLENGE',shape:'SHAPE SHIFTER',memory:'MEMORY RUSH',lava:'FLOOR IS LAVA',odd:'ODD ONE OUT',truefalse:'TRUE OR FALSE',pattern:'PATTERN PLAY'};
 function chooseMode() {
   if(selectedMode==='random') return pick(modes);
   return selectedMode;
