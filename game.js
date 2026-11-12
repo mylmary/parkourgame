@@ -35,6 +35,9 @@ function returnHome() {
   clearTouchInput();
   player.jumpQueued = false;
   phase = 'menu';
+  victoryDance=false;
+  if(rosePetalTimer) clearTimeout(rosePetalTimer);
+  $('rose-petal-layer')?.replaceChildren();
   startInProgress = false;
   $('home-button').classList.add('hidden');
   $('result-overlay').classList.add('hidden');
@@ -86,6 +89,8 @@ const tileMeshes = [];
 const tileLabels = [];
 const actors = [];
 const keys = new Set();
+const jumpEffects = [];
+let victoryDance = false, victoryDanceTime = 0, rosePetalTimer = null;
 const clock = new THREE.Clock();
 const player = { mesh: null, x: 0, z: 0, y: 0, vx: 0, vz: 0, vy: 0, alive: true, speed: 3.35, onGround: true, jumpQueued: false };
 let round = 0, timeLeft = 7, phase = 'menu', selectedMode = 'random', activeMode = 'colour';
@@ -548,6 +553,7 @@ function updateLavaPlatforms(dt){
 }
 function finishLavaCourse(won){
   phase='result';
+  if(won) startVictoryCelebration();
   $('result-eyebrow').textContent=won?'COURSE COMPLETE':'LAVA! TRY AGAIN';
   $('result-title').textContent=won?'🏁 YOU MADE IT!':'YOU FELL IN THE LAVA';
   $('result-copy').textContent=won?'You crossed the moving platforms and reached the other side!':'Watch the moving platforms and try another route across.';
@@ -555,6 +561,71 @@ function finishLavaCourse(won){
   $('result-alive').textContent=won?'1':'0';
   $('continue-button').textContent='PLAY AGAIN';
   $('result-overlay').classList.remove('hidden');
+}
+function triggerJumpGlow(tile){
+  if(!tile) return;
+  const geometry=new THREE.RingGeometry(.48,.76,36);
+  const material=new THREE.MeshBasicMaterial({color:0xffb5d2,transparent:true,opacity:.62,side:THREE.DoubleSide,depthWrite:false});
+  const ring=new THREE.Mesh(geometry,material);
+  ring.rotation.x=-Math.PI/2;
+  ring.position.set(tile.mesh.position.x,tile.mesh.position.y+.17,tile.mesh.position.z);
+  ring.scale.setScalar(.72);
+  scene.add(ring);
+  jumpEffects.push({mesh:ring,life:.58,maxLife:.58});
+}
+function updateJumpGlows(dt){
+  for(let i=jumpEffects.length-1;i>=0;i--){
+    const effect=jumpEffects[i];
+    effect.life-=dt;
+    const progress=1-Math.max(0,effect.life)/effect.maxLife;
+    effect.mesh.scale.setScalar(.72+progress*.75);
+    effect.mesh.material.opacity=Math.max(0,effect.life/effect.maxLife)*.58;
+    if(effect.life<=0){
+      scene.remove(effect.mesh);
+      effect.mesh.geometry.dispose();
+      effect.mesh.material.dispose();
+      jumpEffects.splice(i,1);
+    }
+  }
+}
+function startVictoryCelebration(){
+  victoryDance=true;
+  victoryDanceTime=0;
+  if(rosePetalTimer) clearTimeout(rosePetalTimer);
+  const layer=$('rose-petal-layer');
+  if(!layer) return;
+  layer.replaceChildren();
+  const shades=['#f4a4c5','#f8c4d9','#e98ab4','#ffd7e7','#ee9bbd'];
+  for(let i=0;i<34;i++){
+    const petal=document.createElement('span');
+    petal.className='rose-petal';
+    petal.style.left=(Math.random()*100)+'%';
+    petal.style.setProperty('--petal-size',(7+Math.random()*8)+'px');
+    petal.style.setProperty('--petal-color',pick(shades));
+    petal.style.setProperty('--fall-duration',(3.8+Math.random()*2.4)+'s');
+    petal.style.setProperty('--fall-delay',(Math.random()*1.8)+'s');
+    petal.style.setProperty('--sway',(Math.random()*100-50)+'px');
+    layer.appendChild(petal);
+  }
+  rosePetalTimer=setTimeout(()=>layer.replaceChildren(),7000);
+}
+function animateVictoryDance(dt){
+  if(!victoryDance||!player.mesh?.visible) return;
+  victoryDanceTime+=dt;
+  const t=victoryDanceTime;
+  const limbs=player.mesh.userData.limbs;
+  player.mesh.position.y=.08+Math.abs(Math.sin(t*7))*.16;
+  player.mesh.rotation.y=Math.sin(t*3.6)*.48;
+  player.mesh.rotation.z=Math.sin(t*7.2)*.11;
+  player.mesh.scale.set(.9,.9+Math.abs(Math.sin(t*7))*.055,.9);
+  limbs?.arms?.forEach((arm,i)=>{
+    const side=i===0?-1:1;
+    arm.rotation.z=side*(1.02+Math.sin(t*8+i*Math.PI)*.24);
+    arm.rotation.x=Math.sin(t*8+i*Math.PI)*.22;
+  });
+  limbs?.legs?.forEach((leg,i)=>{
+    leg.rotation.x=Math.sin(t*8+i*Math.PI)*.42;
+  });
 }
 function chooseTarget() {
   const safe=tileMeshes.filter(t=>t.value===challenge.answer);
@@ -601,6 +672,10 @@ function updateHUD() {
   $('timer-value').textContent=activeMode==='lava'?'∞':Math.max(0,Math.ceil(timeLeft));
 }
 function startRound(first=false) {
+  victoryDance=false;
+  victoryDanceTime=0;
+  if(rosePetalTimer) clearTimeout(rosePetalTimer);
+  $('rose-petal-layer')?.replaceChildren();
   round++;
   createArena();
   setupChallenge();
@@ -655,6 +730,7 @@ function resolveRound() {
   if(!player.alive||survivors<=1||round>=10){
     phase='result';
     const playerWon=player.alive&&(survivors===1||round>=10);
+    if(playerWon) startVictoryCelebration();
     $('result-eyebrow').textContent=playerWon?'CHAMPION':'TOURNAMENT OVER';
     $('result-title').textContent=playerWon?'🏆 '+playerName+' WINS!':(survivors===1&&championNPC?championNPC.name+' WINS!':'You were eliminated');
     $('result-copy').textContent=playerWon?'You survived all 10 rounds and outlasted the competition!':(!player.alive?'Your run is over. The remaining competitors keep their places.':'The 10-round tournament has ended.');
@@ -686,7 +762,10 @@ function movePlayer(dt) {
   const lavaMode=activeMode==='lava';
   player.x=THREE.MathUtils.clamp(player.x,-HALF-(lavaMode?1.15:.4),HALF+(lavaMode?1.15:.4));
   player.z=THREE.MathUtils.clamp(player.z,-HALF-(lavaMode?1.45:.4),HALF+(lavaMode?1.45:.4));
-  if(player.jumpQueued&&player.onGround){player.vy=6.2;player.onGround=false;player.ridingTile=null;}
+  if(player.jumpQueued&&player.onGround){
+    triggerJumpGlow(platformUnderPlayer());
+    player.vy=6.2;player.onGround=false;player.ridingTile=null;
+  }
   player.jumpQueued=false;
   player.vy-=15*dt; player.y+=player.vy*dt;
   if(player.y<=0){player.y=0;player.vy=0;player.onGround=true;}
@@ -803,6 +882,8 @@ function animate() {
     if(roundResolveTimer<=0)resolveRound();
   }
   if(phase==='preview'||phase==='playing'||phase==='falling') updateCamera(dt);
+  updateJumpGlows(dt);
+  if(phase==='result'&&victoryDance) animateVictoryDance(dt);
   renderer.render(scene,camera);
 }
 createArena();
