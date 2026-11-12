@@ -357,22 +357,22 @@ function makeChallenge(mode) {
   if(mode==='lava') return {mode,prompt:'REACH THE OTHER SIDE',hint:'',answer:'SAFE',options:['SAFE','LAVA']};
   if(mode==='odd') {
     const sets=[
-      {words:['CAT','DOG','LION','BUTTER'],odd:'BUTTER'},
-      {words:['APPLE','BANANA','MANGO','CARROT'],odd:'CARROT'},
-      {words:['BUS','CAR','TRAIN','ORANGE'],odd:'ORANGE'},
-      {words:['ROSE','TULIP','DAISY','POTATO'],odd:'POTATO'},
-      {words:['SHIRT','TROUSERS','DRESS','SPOON'],odd:'SPOON'},
-      {words:['CIRCLE','SQUARE','TRIANGLE','ELEPHANT'],odd:'ELEPHANT'},
-      {words:['FISH','SHARK','DOLPHIN','EAGLE'],odd:'EAGLE'},
-      {words:['CHAIR','TABLE','SOFA','GRAPES'],odd:'GRAPES'},
-      {words:['PENCIL','PEN','CRAYON','CHICKEN'],odd:'CHICKEN'},
-      {words:['MONDAY','TUESDAY','FRIDAY','JULY'],odd:'JULY'},
-      {words:['KENYA','UGANDA','TANZANIA','NAIROBI'],odd:'NAIROBI'},
-      {words:['MILK','WATER','JUICE','BREAD'],odd:'BREAD'},
-      {words:['GUITAR','PIANO','DRUMS','BICYCLE'],odd:'BICYCLE'},
-      {words:['EYE','EAR','NOSE','KNEE'],odd:'KNEE'},
-      {words:['EAGLE','OWL','PARROT','TIGER'],odd:'TIGER'},
-      {words:['POT','PAN','PLATE','SOCCER'],odd:'SOCCER'}
+      {words:['Cat','Dog','Lion','Butter'],odd:'Butter'},
+      {words:['Apple','Banana','Mango','Carrot'],odd:'Carrot'},
+      {words:['Bus','Car','Train','Orange'],odd:'Orange'},
+      {words:['Rose','Tulip','Daisy','Potato'],odd:'Potato'},
+      {words:['Shirt','Trousers','Dress','Spoon'],odd:'Spoon'},
+      {words:['Circle','Square','Triangle','Elephant'],odd:'Elephant'},
+      {words:['Fish','Shark','Dolphin','Eagle'],odd:'Eagle'},
+      {words:['Chair','Table','Sofa','Grapes'],odd:'Grapes'},
+      {words:['Pencil','Pen','Crayon','Chicken'],odd:'Chicken'},
+      {words:['Monday','Tuesday','Friday','July'],odd:'July'},
+      {words:['Kenya','Uganda','Tanzania','Nairobi'],odd:'Nairobi'},
+      {words:['Milk','Water','Juice','Bread'],odd:'Bread'},
+      {words:['Guitar','Piano','Drums','Bicycle'],odd:'Bicycle'},
+      {words:['Eye','Ear','Nose','Knee'],odd:'Knee'},
+      {words:['Eagle','Owl','Parrot','Tiger'],odd:'Tiger'},
+      {words:['Pot','Pan','Plate','Soccer'],odd:'Soccer'}
     ];
     const set=pick(sets);
     return {mode,prompt:set.words.join('   •   '),hint:'',answer:set.odd,options:shuffle(set.words)};
