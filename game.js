@@ -444,7 +444,8 @@ function setupChallenge() {
     }
     // Colour Rush is a visual recognition challenge: show the colour itself,
     // not a text label that gives away the answer and clutters the tile.
-    if(activeMode!=='colour'){
+    // True/False uses green for TRUE and red for FALSE; colour alone is the tile cue.
+    if(activeMode!=='colour'&&activeMode!=='truefalse'){
       tile.label=makeLabel(labelFor(tile.value), '#15243b');
       tile.mesh.add(tile.label);
     }
