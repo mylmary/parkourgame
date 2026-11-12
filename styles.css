@@ -206,22 +206,23 @@ body{background:#f8e7ef}
 /* Eight-by-eight arena and circular mobile direction pad */
 .direction-circle{
  position:relative;flex:0 0 auto;width:clamp(148px,30vh,180px);height:clamp(148px,30vh,180px);
- border:3px solid rgba(255,255,255,.92);border-radius:50%;
- background:radial-gradient(circle at 35% 28%,#fff7fc 0%,#f9d9e9 62%,#efb9d4 100%);
- box-shadow:0 7px 22px rgba(143,82,123,.22),inset 0 2px 8px rgba(255,255,255,.95);
+ border:2px solid rgba(255,255,255,.58);border-radius:50%;
+ background:rgba(255,247,252,.16);
+ box-shadow:0 5px 16px rgba(143,82,123,.10),inset 0 1px 5px rgba(255,255,255,.24);
  pointer-events:auto;touch-action:none;
 }
 .direction-circle .move-button{
  position:absolute;width:36%;height:36%;min-width:0;min-height:0;
- display:grid;place-items:center;border:2px solid #fff;border-radius:50%;
- background:#ff91b8;color:#fff;font-size:clamp(17px,4.4vh,23px);
- box-shadow:0 4px 10px rgba(183,91,139,.2);padding:0;
+ display:grid;place-items:center;border:2px solid rgba(255,255,255,.94);border-radius:50%;
+ background:rgba(255,145,184,.94);color:#fff;font-size:clamp(17px,4.4vh,23px);
+ box-shadow:0 3px 9px rgba(183,91,139,.16);padding:0;
 }
 .direction-circle .move-button:active{background:#e978a5;transform:scale(.94)}
-.direction-circle .move-up{left:32%;top:2%}
-.direction-circle .move-down{left:32%;bottom:2%}
-.direction-circle .move-left{left:2%;top:32%}
-.direction-circle .move-right{right:2%;top:32%}
+/* Button centres sit directly on the four cardinal points of the circle outline. */
+.direction-circle .move-up{left:32%;top:-18%}
+.direction-circle .move-down{left:32%;bottom:-18%}
+.direction-circle .move-left{left:-18%;top:32%}
+.direction-circle .move-right{right:-18%;top:32%}
 .direction-center{display:none!important}
 .mobile-controls{align-items:flex-end}
 .jump-button{background:#9b8be9;color:#fff;border:3px solid #fff;box-shadow:0 6px 18px rgba(116,91,171,.24)}
