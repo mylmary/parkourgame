@@ -354,9 +354,26 @@ function makeChallenge(mode) {
   }
   if(mode==='lava') return {mode,prompt:'REACH THE OTHER SIDE',hint:'',answer:'SAFE',options:['SAFE','LAVA']};
   if(mode==='odd') {
-    const target=pick(['FISH','BIRD','CAT','DOG']);
-    const options=['APPLE','CAR','TREE',target];
-    return {mode,prompt:target,hint:'',answer:target,options:shuffle(options)};
+    const sets=[
+      {words:['CAT','DOG','LION','BUTTER'],odd:'BUTTER'},
+      {words:['APPLE','BANANA','MANGO','CARROT'],odd:'CARROT'},
+      {words:['BUS','CAR','TRAIN','ORANGE'],odd:'ORANGE'},
+      {words:['ROSE','TULIP','DAISY','POTATO'],odd:'POTATO'},
+      {words:['SHIRT','TROUSERS','DRESS','SPOON'],odd:'SPOON'},
+      {words:['CIRCLE','SQUARE','TRIANGLE','ELEPHANT'],odd:'ELEPHANT'},
+      {words:['FISH','SHARK','DOLPHIN','EAGLE'],odd:'EAGLE'},
+      {words:['CHAIR','TABLE','SOFA','GRAPES'],odd:'GRAPES'},
+      {words:['PENCIL','PEN','CRAYON','CHICKEN'],odd:'CHICKEN'},
+      {words:['MONDAY','TUESDAY','FRIDAY','JULY'],odd:'JULY'},
+      {words:['KENYA','UGANDA','TANZANIA','NAIROBI'],odd:'NAIROBI'},
+      {words:['MILK','WATER','JUICE','BREAD'],odd:'BREAD'},
+      {words:['GUITAR','PIANO','DRUMS','BICYCLE'],odd:'BICYCLE'},
+      {words:['EYE','EAR','NOSE','KNEE'],odd:'KNEE'},
+      {words:['EAGLE','OWL','PARROT','TIGER'],odd:'TIGER'},
+      {words:['POT','PAN','PLATE','SOCCER'],odd:'SOCCER'}
+    ];
+    const set=pick(sets);
+    return {mode,prompt:set.words.join('   •   '),hint:'',answer:set.odd,options:shuffle(set.words)};
   }
   if(mode==='truefalse') {
     const a=2+Math.floor(Math.random()*9), b=2+Math.floor(Math.random()*9);
