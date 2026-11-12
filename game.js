@@ -705,6 +705,8 @@ function startRound(first=false) {
     survivors=(player.alive?1:0)+actors.filter(a=>a.alive).length;
     timeLeft=Math.max(4,7-(round-1)*0.3);
   }
+  // Mary starts facing into the course, away from the camera.
+  player.mesh.rotation.y=Math.PI;
   const needsPreview=activeMode==='emoji'||activeMode==='memory';
   previewTimer=activeMode==='emoji'?.65:activeMode==='memory'?.85:0;
   phase=needsPreview?'preview':'playing';
