@@ -423,16 +423,23 @@ function setupChallenge() {
   promptEl.style.color=activeMode==='colour'?(contrastingText[challenge.answer]||'#ffffff'):'#ffffff';
   if(activeMode==='lava'){
     const safeMaterial=0x65d5b0, lavaMaterial=0xff573d;
+    // Create a connected, changing route from the starting edge to the finish,
+    // then mix additional safe tiles randomly among the lava tiles.
+    const safeTiles=new Set();
+    let routeCol=Math.floor(GRID/2);
+    for(let row=GRID-1;row>=0;row--){
+      routeCol=THREE.MathUtils.clamp(routeCol+pick([-1,0,0,0,1]),0,GRID-1);
+      safeTiles.add(tileMeshes.find(t=>t.row===row&&t.col===routeCol));
+    }
+    shuffle(tileMeshes.filter(t=>!safeTiles.has(t))).slice(0,10).forEach(t=>safeTiles.add(t));
     tileMeshes.forEach(tile=>{
-      // Keep a generous, shifting-safe route through the centre; outer lanes
-      // contain lava so players must steer and jump between moving platforms.
-      const safe=tile.col>=2&&tile.col<=5;
+      const safe=safeTiles.has(tile);
       tile.value=safe?'SAFE':'LAVA';
       tile.falling=false; tile.mesh.visible=true; tile.edge.visible=true;
       tile.x=(tile.col-(GRID-1)/2)*STEP;
       tile.z=(tile.row-(GRID-1)/2)*STEP;
-      tile.previousX=tile.x;
-      tile.movePhase=(tile.row*1.37+tile.col*2.11)% (Math.PI*2);
+      tile.previousZ=tile.z;
+      tile.movePhase=(tile.row*1.37+tile.col*2.11)%(Math.PI*2);
       tile.mesh.position.set(tile.x,0,tile.z);
       tile.edge.position.set(tile.x,-.15,tile.z);
       tile.mesh.material.color.setHex(safe?safeMaterial:lavaMaterial);
@@ -521,13 +528,14 @@ function platformUnderPlayer(){
 function updateLavaPlatforms(dt){
   const now=clock.elapsedTime;
   for(const tile of tileMeshes){
-    tile.previousX=tile.mesh.position.x;
-    const nextX=tile.x+Math.sin(now*tile.moveSpeed+tile.movePhase)*tile.moveAmp;
-    tile.mesh.position.x=nextX;
-    tile.edge.position.x=nextX;
+    tile.previousZ=tile.mesh.position.z;
+    // Platforms move along the forward/back course axis, not sideways.
+    const nextZ=tile.z-Math.sin(now*tile.moveSpeed+tile.movePhase)*tile.moveAmp;
+    tile.mesh.position.z=nextZ;
+    tile.edge.position.z=nextZ;
     tile.mesh.position.y=.04+Math.sin(now*2.1+tile.movePhase)*.055;
     tile.edge.position.y=tile.mesh.position.y-.15;
-    if(player.ridingTile===tile&&player.onGround) player.x+=nextX-tile.previousX;
+    if(player.ridingTile===tile&&player.onGround) player.z+=nextZ-tile.previousZ;
     if(tile.value==='LAVA'){
       tile.mesh.material.emissiveIntensity=.38+Math.sin(now*5+tile.movePhase)*.16;
     }
