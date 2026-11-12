@@ -888,9 +888,10 @@ if(directionCircle){
   const updateCircleJoystick = event => {
     if(event.pointerId !== joystickPointer) return;
     const rect = directionCircle.getBoundingClientRect();
-    const dx = (event.clientX - (rect.left + rect.width / 2)) / (rect.width * .38);
-    const dy = (event.clientY - (rect.top + rect.height / 2)) / (rect.height * .38);
+    const dx = (event.clientX - (rect.left + rect.width / 2)) / (rect.width * .46);
+    const dy = (event.clientY - (rect.top + rect.height / 2)) / (rect.height * .46);
     const magnitude = Math.hypot(dx,dy);
+    if(magnitude < .10){joystickVector={x:0,y:0};return;}
     const scale = magnitude > 1 ? 1 / magnitude : 1;
     joystickVector = {x:dx*scale,y:dy*scale};
   };
