@@ -659,7 +659,7 @@ function enhanceVictoryMary(mesh){
   for(const side of [-1,1]){
     for(let k=0;k<3;k++){
       const feather=detail(new THREE.SphereGeometry(1,16,12),featherMat,
-        [side*(.59+.075*k),1.24-.105*k,-.305],
+        [side*(.59+.075*k),1.24-.105*k,-.13],
         [.105,.19,.055],[0,0,side*-.42]);
     }
   }
