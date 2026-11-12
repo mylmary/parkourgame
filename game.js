@@ -113,16 +113,24 @@ function makeLabel(text, color = '#17243a') {
   canvas.height = (isPictogram || isNumber) ? 256 : 128;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = 'rgba(255,255,255,.93)';
-  if (isPictogram || isNumber) {
-    roundRect(ctx, 8, 8, 240, 240, 36);
-  } else {
-    roundRect(ctx, 8, 8, 240, 112, 24);
+  const isShape = activeMode === 'shape';
+  if (!isShape) {
+    ctx.fillStyle = 'rgba(255,255,255,.93)';
+    if (isPictogram || isNumber) {
+      roundRect(ctx, 8, 8, 240, 240, 36);
+    } else {
+      roundRect(ctx, 8, 8, 240, 112, 24);
+    }
+    ctx.fill();
   }
-  ctx.fill();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  if (isPictogram) {
+  if (isShape) {
+    // Shape Shifter shows only the solid shape, with no label card or outline.
+    ctx.fillStyle = color;
+    ctx.font = '190px Arial, "Noto Sans Symbols 2", sans-serif';
+    ctx.fillText(labelText, 128, 132);
+  } else if (isPictogram) {
     ctx.font = '122px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
     ctx.fillText(labelText, 128, 130);
   } else if (isNumber) {
@@ -488,7 +496,8 @@ function setupChallenge() {
     // not a text label that gives away the answer and clutters the tile.
     // True/False uses green for TRUE and red for FALSE; colour alone is the tile cue.
     if(activeMode!=='colour'&&activeMode!=='truefalse'){
-      tile.label=makeLabel(labelFor(tile.value), '#15243b');
+      const shapeColor=activeMode==='shape'?'#'+colorFor(tile.value).toString(16).padStart(6,'0'):'#15243b';
+      tile.label=makeLabel(labelFor(tile.value), shapeColor);
       tile.mesh.add(tile.label);
     }
   });
