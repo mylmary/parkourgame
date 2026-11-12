@@ -882,6 +882,37 @@ $('jump-button').addEventListener('pointerdown',e=>{
   e.preventDefault();
   if(e.isPrimary||e.pointerType==='touch') player.jumpQueued=true;
 });
+// The open area inside the movement circle also works as an analogue touch pad.
+const directionCircle = document.querySelector('.direction-circle');
+if(directionCircle){
+  const updateCircleJoystick = event => {
+    if(event.pointerId !== joystickPointer) return;
+    const rect = directionCircle.getBoundingClientRect();
+    const dx = (event.clientX - (rect.left + rect.width / 2)) / (rect.width * .38);
+    const dy = (event.clientY - (rect.top + rect.height / 2)) / (rect.height * .38);
+    const magnitude = Math.hypot(dx,dy);
+    const scale = magnitude > 1 ? 1 / magnitude : 1;
+    joystickVector = {x:dx*scale,y:dy*scale};
+  };
+  directionCircle.addEventListener('pointerdown',event=>{
+    if(event.target.closest('.move-button')) return;
+    event.preventDefault();
+    joystickPointer = event.pointerId;
+    try{directionCircle.setPointerCapture(event.pointerId);}catch(_){}
+    updateCircleJoystick(event);
+  });
+  directionCircle.addEventListener('pointermove',event=>{
+    if(event.pointerId === joystickPointer){event.preventDefault();updateCircleJoystick(event);}
+  });
+  const releaseCircleJoystick = event=>{
+    if(event.pointerId !== joystickPointer) return;
+    joystickVector={x:0,y:0};
+    joystickPointer=null;
+  };
+  directionCircle.addEventListener('pointerup',releaseCircleJoystick);
+  directionCircle.addEventListener('pointercancel',releaseCircleJoystick);
+  directionCircle.addEventListener('lostpointercapture',releaseCircleJoystick);
+}
 document.querySelectorAll('.move-button').forEach(button=>{
   const dir=button.dataset.direction;
   const down=e=>{
