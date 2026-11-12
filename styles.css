@@ -239,3 +239,21 @@ body{background:#f8e7ef}
 /* Mobile layout: jump on the left, larger movement pad on the right. */
 .mobile-controls .jump-button{order:0}
 .mobile-controls .direction-circle{order:1}
+
+
+/* Soft jump sparkle: a brief, subtle rose-pink ring on the tile. */
+#rose-petal-layer{
+  position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:60;
+}
+.rose-petal{
+  position:absolute;top:-24px;width:var(--petal-size);height:calc(var(--petal-size)*1.45);
+  background:var(--petal-color);border-radius:100% 0 100% 0;
+  opacity:0;filter:drop-shadow(0 1px 2px rgba(176,85,126,.12));
+  transform:rotate(35deg);
+  animation:rose-petal-fall var(--fall-duration) ease-in var(--fall-delay) forwards;
+}
+@keyframes rose-petal-fall{
+  0%{opacity:0;transform:translate3d(0,-4vh,0) rotate(0deg)}
+  12%{opacity:.88}
+  100%{opacity:0;transform:translate3d(var(--sway),110vh,0) rotate(620deg)}
+}
