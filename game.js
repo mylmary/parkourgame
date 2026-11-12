@@ -46,6 +46,7 @@ function returnHome() {
   $('player-name').value = playerName === 'Player' ? $('player-name').value : playerName;
 }
 $('home-button').addEventListener('click', returnHome);
+$('result-home-button').addEventListener('click', returnHome);
 $('home-button').addEventListener('pointerup', event => {
   event.preventDefault();
   returnHome();
