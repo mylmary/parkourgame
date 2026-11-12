@@ -428,8 +428,13 @@ function setupChallenge() {
     const safeTiles=new Set();
     let routeCol=Math.floor(GRID/2);
     for(let row=GRID-1;row>=0;row--){
-      routeCol=THREE.MathUtils.clamp(routeCol+pick([-1,0,0,0,1]),0,GRID-1);
       safeTiles.add(tileMeshes.find(t=>t.row===row&&t.col===routeCol));
+      if(row>0){
+        const nextCol=THREE.MathUtils.clamp(routeCol+pick([-1,0,0,0,1]),0,GRID-1);
+        // Add a neighbouring tile in this row so every turn in the route is walkable.
+        safeTiles.add(tileMeshes.find(t=>t.row===row&&t.col===nextCol));
+        routeCol=nextCol;
+      }
     }
     shuffle(tileMeshes.filter(t=>!safeTiles.has(t))).slice(0,10).forEach(t=>safeTiles.add(t));
     tileMeshes.forEach(tile=>{
