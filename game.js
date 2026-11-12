@@ -122,7 +122,7 @@ function makeLabel(text, color = '#17243a') {
     ctx.fillStyle = color;
     // Larger numerals for quick reading; scale down only when several digits
     // need to fit so the full answer remains visible.
-    const digitSize = labelText.length <= 2 ? 220 : labelText.length === 3 ? 165 : 125;
+    const digitSize = labelText.length <= 2 ? 170 : labelText.length === 3 ? 140 : 112;
     ctx.font = `900 ${digitSize}px Arial, sans-serif`;
     ctx.fillText(labelText, 128, 130, 224);
   } else {
@@ -134,7 +134,7 @@ function makeLabel(text, color = '#17243a') {
   texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.set(isPictogram ? 1.02 : isNumber ? 2.28 : 1.78, isPictogram ? 1.02 : isNumber ? 2.28 : 0.89, 1);
+  sprite.scale.set(isPictogram ? 1.02 : isNumber ? 1.72 : 1.78, isPictogram ? 1.02 : isNumber ? 1.72 : 0.89, 1);
   sprite.position.y = 0.28;
   return sprite;
 }
@@ -289,10 +289,27 @@ const palettes = [
   {name:'PINK',hex:0xff7fa8},{name:'BLUE',hex:0x65bdf2},{name:'YELLOW',hex:0xffd45f},
   {name:'MINT',hex:0x65d5b0},{name:'PURPLE',hex:0xb28df2},{name:'PEACH',hex:0xffa078}
 ];
-const animals = [{n:'CAT',e:'🐱'},{n:'DOG',e:'🐶'},{n:'LION',e:'🦁'},{n:'FISH',e:'🐟'},{n:'BIRD',e:'🐦'},{n:'PANDA',e:'🐼'}];
-const emojis = [{n:'HEART',e:'❤️'},{n:'STAR',e:'⭐'},{n:'SUN',e:'☀️'},{n:'MOON',e:'🌙'},{n:'FLOWER',e:'🌸'},{n:'RAINBOW',e:'🌈'},{n:'PIZZA',e:'🍕'},{n:'BALL',e:'⚽'}];
-const shapes = [{n:'CIRCLE',e:'●'},{n:'STAR',e:'★'},{n:'SQUARE',e:'■'},{n:'HEART',e:'♥'},{n:'TRIANGLE',e:'▲'},{n:'DIAMOND',e:'◆'}];
-const words = [{n:'APPLE',e:'🍎'},{n:'HOUSE',e:'🏠'},{n:'RIVER',e:'🌊'},{n:'CLOUD',e:'☁️'},{n:'PLANT',e:'🪴'},{n:'TRAIN',e:'🚆'}];
+const animals = [
+  {n:'CAT',e:'🐱'},{n:'DOG',e:'🐶'},{n:'LION',e:'🦁'},{n:'TIGER',e:'🐯'},{n:'ELEPHANT',e:'🐘'},
+  {n:'GIRAFFE',e:'🦒'},{n:'ZEBRA',e:'🦓'},{n:'MONKEY',e:'🐵'},{n:'PANDA',e:'🐼'},{n:'BEAR',e:'🐻'},
+  {n:'FOX',e:'🦊'},{n:'RABBIT',e:'🐰'},{n:'FROG',e:'🐸'},{n:'TURTLE',e:'🐢'},{n:'SNAKE',e:'🐍'},
+  {n:'FISH',e:'🐟'},{n:'DOLPHIN',e:'🐬'},{n:'SHARK',e:'🦈'},{n:'BIRD',e:'🐦'},{n:'OWL',e:'🦉'},
+  {n:'EAGLE',e:'🦅'},{n:'PENGUIN',e:'🐧'},{n:'HORSE',e:'🐴'},{n:'COW',e:'🐮'},{n:'SHEEP',e:'🐑'}
+];
+const emojis = [
+  {n:'HEART',e:'❤️'},{n:'STAR',e:'⭐'},{n:'SUN',e:'☀️'},{n:'MOON',e:'🌙'},{n:'FLOWER',e:'🌸'},
+  {n:'RAINBOW',e:'🌈'},{n:'PIZZA',e:'🍕'},{n:'BALL',e:'⚽'},{n:'CAKE',e:'🎂'},{n:'ICE CREAM',e:'🍦'},
+  {n:'MUSIC',e:'🎵'},{n:'GIFT',e:'🎁'},{n:'CROWN',e:'👑'},{n:'KEY',e:'🔑'},{n:'UMBRELLA',e:'☂️'},
+  {n:'ROCKET',e:'🚀'},{n:'BICYCLE',e:'🚲'},{n:'AIRPLANE',e:'✈️'},{n:'LIGHTNING',e:'⚡'},{n:'FIRE',e:'🔥'},
+  {n:'LEAF',e:'🍃'},{n:'BUTTERFLY',e:'🦋'},{n:'CAMERA',e:'📷'},{n:'BOOK',e:'📚'},{n:'TROPHY',e:'🏆'}
+];
+const shapes = [{n:'CIRCLE',e:'●'},{n:'STAR',e:'★'},{n:'SQUARE',e:'■'},{n:'HEART',e:'♥'},{n:'TRIANGLE',e:'▲'},{n:'DIAMOND',e:'◆'},{n:'OVAL',e:'⬭'},{n:'HEXAGON',e:'⬡'},{n:'CRESCENT',e:'☾'},{n:'CROSS',e:'✚'}];
+const words = [
+  {n:'APPLE',e:'🍎'},{n:'HOUSE',e:'🏠'},{n:'RIVER',e:'🌊'},{n:'CLOUD',e:'☁️'},{n:'PLANT',e:'🪴'},
+  {n:'TRAIN',e:'🚆'},{n:'MOUNTAIN',e:'⛰️'},{n:'BRIDGE',e:'🌉'},{n:'OCEAN',e:'🌊'},{n:'FLOWER',e:'🌷'},
+  {n:'BOOK',e:'📖'},{n:'CLOCK',e:'🕒'},{n:'BOTTLE',e:'🍼'},{n:'CHAIR',e:'🪑'},{n:'LADDER',e:'🪜'},
+  {n:'GUITAR',e:'🎸'},{n:'CAMERA',e:'📷'},{n:'BASKET',e:'🧺'},{n:'CASTLE',e:'🏰'},{n:'KITE',e:'🪁'}
+];
 const pick = arr => arr[Math.floor(Math.random()*arr.length)];
 const shuffle = arr => [...arr].sort(()=>Math.random()-.5);
 function mathQuestion() {
