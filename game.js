@@ -36,6 +36,7 @@ function returnHome() {
   player.jumpQueued = false;
   phase = 'menu';
   victoryDance=false;
+  $('victory-character')?.classList.add('hidden');
   if(rosePetalTimer) clearTimeout(rosePetalTimer);
   $('rose-petal-layer')?.replaceChildren();
   startInProgress = false;
@@ -595,8 +596,11 @@ function updateJumpGlows(dt){
   }
 }
 function startVictoryCelebration(){
+  setupVictoryDisplay();
   victoryDance=true;
   victoryDanceTime=0;
+  showcaseDanceTime=0;
+  $('victory-character')?.classList.remove('hidden');
   if(rosePetalTimer) clearTimeout(rosePetalTimer);
   const layer=$('rose-petal-layer');
   if(!layer) return;
@@ -615,23 +619,56 @@ function startVictoryCelebration(){
   }
   rosePetalTimer=setTimeout(()=>layer.replaceChildren(),7000);
 }
+let showcaseMary=null, showcaseRenderer=null, showcaseScene=null, showcaseCamera=null, showcaseDanceTime=0;
+function setupVictoryDisplay(){
+  const mount=$('victory-character');
+  if(!mount||showcaseRenderer) return;
+  showcaseScene=new THREE.Scene();
+  showcaseCamera=new THREE.PerspectiveCamera(32,1,.1,50);
+  showcaseCamera.position.set(0,1.55,7.2);
+  showcaseCamera.lookAt(0,1.35,0);
+  showcaseRenderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});
+  showcaseRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+  showcaseRenderer.setSize(220,190);
+  showcaseRenderer.outputColorSpace=THREE.SRGBColorSpace;
+  showcaseRenderer.setClearColor(0x000000,0);
+  showcaseRenderer.shadowMap.enabled=false;
+  showcaseScene.add(new THREE.HemisphereLight(0xfff5fb,0x8bb8a8,2.3));
+  const key=new THREE.DirectionalLight(0xffffff,2.4);key.position.set(-3,5,6);showcaseScene.add(key);
+  showcaseMary=createMaryActor(playerName);
+  showcaseMary.position.set(0,-.02,0);
+  showcaseScene.add(showcaseMary);
+  mount.appendChild(showcaseRenderer.domElement);
+  const resize=()=>{
+    const w=Math.max(1,mount.clientWidth||220),h=Math.max(1,mount.clientHeight||190);
+    showcaseRenderer.setSize(w,h,false);
+    showcaseCamera.aspect=w/h;showcaseCamera.updateProjectionMatrix();
+  };
+  if(typeof ResizeObserver!=='undefined') new ResizeObserver(resize).observe(mount);
+  else window.addEventListener('resize',resize);
+  resize();
+}
 function animateVictoryDance(dt){
-  if(!victoryDance||!player.mesh?.visible) return;
+  if(!victoryDance) return;
   victoryDanceTime+=dt;
   const t=victoryDanceTime;
-  const limbs=player.mesh.userData.limbs;
-  player.mesh.position.y=.08+Math.abs(Math.sin(t*7))*.16;
-  player.mesh.rotation.y=Math.sin(t*3.6)*.48;
-  player.mesh.rotation.z=Math.sin(t*7.2)*.11;
-  player.mesh.scale.set(.9,.9+Math.abs(Math.sin(t*7))*.055,.9);
-  limbs?.arms?.forEach((arm,i)=>{
-    const side=i===0?-1:1;
-    arm.rotation.z=side*(1.02+Math.sin(t*8+i*Math.PI)*.24);
-    arm.rotation.x=Math.sin(t*8+i*Math.PI)*.22;
-  });
-  limbs?.legs?.forEach((leg,i)=>{
-    leg.rotation.x=Math.sin(t*8+i*Math.PI)*.42;
-  });
+  const dance=(mesh,baseY,scale)=>{
+    if(!mesh) return;
+    const limbs=mesh.userData.limbs;
+    mesh.position.y=baseY+Math.abs(Math.sin(t*7))*.16;
+    mesh.rotation.y=Math.sin(t*3.6)*.48;
+    mesh.rotation.z=Math.sin(t*7.2)*.11;
+    mesh.scale.set(scale,scale+Math.abs(Math.sin(t*7))*.055,scale);
+    limbs?.arms?.forEach((arm,i)=>{
+      const side=i===0?-1:1;
+      arm.rotation.z=side*(1.02+Math.sin(t*8+i*Math.PI)*.24);
+      arm.rotation.x=Math.sin(t*8+i*Math.PI)*.22;
+    });
+    limbs?.legs?.forEach((leg,i)=>{leg.rotation.x=Math.sin(t*8+i*Math.PI)*.42;});
+  };
+  if(player.mesh?.visible) dance(player.mesh,.08,.9);
+  dance(showcaseMary,-.02,.9);
+  if(showcaseRenderer&&showcaseScene&&showcaseCamera) showcaseRenderer.render(showcaseScene,showcaseCamera);
 }
 function chooseTarget() {
   const safe=tileMeshes.filter(t=>t.value===challenge.answer);
@@ -680,6 +717,7 @@ function updateHUD() {
 function startRound(first=false) {
   victoryDance=false;
   victoryDanceTime=0;
+  $('victory-character')?.classList.add('hidden');
   if(rosePetalTimer) clearTimeout(rosePetalTimer);
   $('rose-petal-layer')?.replaceChildren();
   round++;
