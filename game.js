@@ -120,8 +120,8 @@ function makeLabel(text, color = '#17243a') {
     ctx.fillText(labelText, 128, 130);
   } else if (isNumber) {
     ctx.fillStyle = color;
-    // Smaller numerals so they sit comfortably within each tile.
-    const digitSize = labelText.length <= 2 ? 125 : labelText.length === 3 ? 105 : 85;
+    // Keep numerals modest and relaxed; the tile should remain the main visual.
+    const digitSize = labelText.length <= 2 ? 76 : labelText.length === 3 ? 64 : 52;
     ctx.font = `900 ${digitSize}px Arial, sans-serif`;
     ctx.fillText(labelText, 128, 130, 224);
   } else {
@@ -133,7 +133,7 @@ function makeLabel(text, color = '#17243a') {
   texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.set(isPictogram ? 1.02 : isNumber ? 1.35 : 1.78, isPictogram ? 1.02 : isNumber ? 1.35 : 0.89, 1);
+  sprite.scale.set(isPictogram ? 1.02 : isNumber ? 0.95 : 1.78, isPictogram ? 1.02 : isNumber ? 0.95 : 0.89, 1);
   sprite.position.y = 0.28;
   return sprite;
 }
