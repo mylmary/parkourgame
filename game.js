@@ -686,7 +686,12 @@ function startRound(first=false) {
     actors.forEach(a=>{if(a.alive){a.mesh.visible=true;a.x=(Math.random()-.5)*10;a.z=(Math.random()-.5)*10;a.target=null;a.decision=0;}});
   }
   if(activeMode==='lava'){
-    player.x=0; player.z=HALF+.3; player.y=0; player.vx=0; player.vz=0; player.vy=0; player.alive=true; player.onGround=true; player.ridingTile=null;
+    // Spawn on the actual safe starting platform, not in the centre gap
+    // between the two middle columns.
+    const startTile=tileMeshes.find(tile=>tile.row===GRID-1&&tile.value==='SAFE');
+    player.x=startTile?startTile.mesh.position.x:0;
+    player.z=startTile?startTile.mesh.position.z:HALF;
+    player.y=0; player.vx=0; player.vz=0; player.vy=0; player.alive=true; player.onGround=true; player.ridingTile=startTile||null;
     player.mesh.visible=true;
     actors.forEach(a=>{a.alive=false;a.mesh.visible=false;});
     survivors=1; timeLeft=99;
