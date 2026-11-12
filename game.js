@@ -89,7 +89,7 @@ const keys = new Set();
 const clock = new THREE.Clock();
 const player = { mesh: null, x: 0, z: 0, y: 0, vx: 0, vz: 0, vy: 0, alive: true, speed: 3.35, onGround: true, jumpQueued: false };
 let round = 0, timeLeft = 7, phase = 'menu', selectedMode = 'random', activeMode = 'colour';
-let challenge = null, survivors = 10, soundOn = true, lastTime = 0, roundResolveTimer = 0, betweenTimer = 0, playerName = 'Player';
+let challenge = null, survivors = 10, soundOn = true, lastTime = 0, roundResolveTimer = 0, betweenTimer = 0, previewTimer = 0, playerName = 'Player';
 let joystickVector = { x: 0, y: 0 }, joystickPointer = null;
 const touchDirections = new Set();
 const npcNames = ['Luna','Mia','Daisy','Coco','Poppy','Ivy','Rosie','Bella','Mochi'];
@@ -337,7 +337,7 @@ function makeChallenge(mode) {
   }
   if(mode==='emoji') {
     const target=pick(emojis);
-    return {mode,prompt:'Find '+target.n+' '+target.e,hint:'',answer:target.n,options:shuffle([target.n,...shuffle(emojis.filter(e=>e.n!==target.n).map(e=>e.n)).slice(0,3)]),icons:Object.fromEntries(emojis.map(e=>[e.n,e.e]))};
+    return {mode,prompt:target.e,hint:'',answer:target.n,options:shuffle([target.n,...shuffle(emojis.filter(e=>e.n!==target.n).map(e=>e.n)).slice(0,3)]),icons:Object.fromEntries(emojis.map(e=>[e.n,e.e]))};
   }
   if(mode==='word') {
     const target=pick(words);
@@ -349,7 +349,8 @@ function makeChallenge(mode) {
   }
   if(mode==='memory') {
     const target=pick(['3','5','7','8','9']);
-    return {mode,prompt:target,hint:'',answer:target,options:shuffle(['2','3','5','7','8','9'].slice(0,4))};
+    const otherNumbers=shuffle(['2','3','5','7','8','9'].filter(n=>n!==target)).slice(0,3);
+    return {mode,prompt:target,hint:'',answer:target,options:shuffle([target,...otherNumbers])};
   }
   if(mode==='odd') {
     const target=pick(['FISH','BIRD','CAT','DOG']);
@@ -379,6 +380,15 @@ function colorFor(value) {
 function labelFor(value) {
   if(challenge.icons?.[value]) return challenge.icons[value];
   return value;
+}
+function hideTileLabels() {
+  tileMeshes.forEach(tile=>{
+    if(!tile.label) return;
+    tile.mesh.remove(tile.label);
+    tile.label.material.map?.dispose();
+    tile.label.material.dispose();
+    tile.label=null;
+  });
 }
 function setupChallenge() {
   activeMode=chooseMode();
@@ -513,9 +523,14 @@ function startRound(first=false) {
   }
   actors.forEach(a=>{a.speed=(2.0+Math.random()*.65)*(1+(round-1)*.055);});
   survivors=(player.alive?1:0)+actors.filter(a=>a.alive).length;
-  timeLeft=Math.max(4,7-(round-1)*0.3); phase='playing'; updateHUD();
+  timeLeft=Math.max(4,7-(round-1)*0.3);
+  const needsPreview=activeMode==='emoji'||activeMode==='memory';
+  previewTimer=activeMode==='emoji'?.65:activeMode==='memory'?.85:0;
+  phase=needsPreview?'preview':'playing';
+  updateHUD();
   $('result-overlay').classList.add('hidden');
-  showMessage('ROUND '+round+' — GO!');
+  if(!needsPreview) showMessage('ROUND '+round+' — GO!');
+  else showMessage(activeMode==='emoji'?'REMEMBER THE EMOJI':'REMEMBER THE TILES');
 }
 function dropWrongTiles() {
   phase='falling';
@@ -661,6 +676,14 @@ function animate() {
   if(phase==='between'){
     betweenTimer-=dt;
     if(betweenTimer<=0) startRound(false);
+  } else if(phase==='preview'){
+    previewTimer-=dt;
+    if(previewTimer<=0){
+      if(activeMode==='emoji') $('challenge-prompt').textContent='';
+      if(activeMode==='memory') hideTileLabels();
+      phase='playing';
+      showMessage('GO!');
+    }
   } else if(phase==='playing'){
     timeLeft-=dt;
     movePlayer(dt);directNPCs(dt);updateHUD();
@@ -669,7 +692,7 @@ function animate() {
     updateFalling(dt);roundResolveTimer-=dt;
     if(roundResolveTimer<=0)resolveRound();
   }
-  if(phase==='playing'||phase==='falling') updateCamera(dt);
+  if(phase==='preview'||phase==='playing'||phase==='falling') updateCamera(dt);
   renderer.render(scene,camera);
 }
 createArena();
