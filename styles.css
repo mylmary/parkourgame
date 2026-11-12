@@ -293,3 +293,16 @@ body{background:#f8e7ef}
  .result-modal h2{font-size:clamp(22px,5vh,27px);margin:3px 0}
  .result-modal .result-numbers{margin:5px 0 8px}
 }
+
+
+/* Home button remains accessible at the top-left of the congratulations screen. */
+.result-home-button{
+ position:absolute;z-index:12;top:max(14px,env(safe-area-inset-top));left:max(14px,env(safe-area-inset-left));
+ display:flex;align-items:center;justify-content:center;gap:6px;min-width:76px;height:38px;padding:0 13px;
+ border:1px solid rgba(255,255,255,.96);border-radius:22px;background:rgba(255,248,252,.96);
+ color:#a45e89;font:900 18px 'Nunito',system-ui,sans-serif;box-shadow:0 4px 14px rgba(174,94,135,.16);
+ cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+}
+.result-home-button span{font-size:9px;letter-spacing:.06em}
+.result-home-button:active{transform:scale(.96)}
+@media(max-height:520px){.result-home-button{top:8px;left:8px;height:32px;min-width:66px;padding:0 10px;font-size:16px}.result-home-button span{font-size:8px}}
