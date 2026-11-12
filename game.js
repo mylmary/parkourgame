@@ -270,7 +270,7 @@ function createArena() {
     arena.add(mesh);
     const edge = new THREE.Mesh(new THREE.BoxGeometry(TILE+.035,.035,TILE+.035), new THREE.MeshStandardMaterial({color:0xffffff, roughness:.8}));
     edge.position.set(x,-.15,z); arena.add(edge);
-    tileMeshes.push({ mesh, edge, x, z, label: null, value: null, falling: false, originalY: 0 });
+    tileMeshes.push({ mesh, edge, x, z, row, col, label: null, value: null, falling: false, originalY: 0, movePhase: Math.random()*Math.PI*2, moveSpeed: .65+Math.random()*.45, moveAmp: .38, previousX: x });
   }
   const wallMat = new THREE.MeshStandardMaterial({color:0xffc3d8, roughness:.72});
   const railGeo = new THREE.BoxGeometry(GRID*STEP,.35,.35);
@@ -283,7 +283,7 @@ function createArena() {
   }
 }
 
-const modes = ['colour','math','animal','emoji','word','shape','memory','odd','truefalse','pattern'];
+const modes = ['colour','math','animal','emoji','word','shape','memory','lava','odd','truefalse','pattern'];
 const palettes = [
   {name:'PINK',hex:0xff7fa8},{name:'BLUE',hex:0x65bdf2},{name:'YELLOW',hex:0xffd45f},
   {name:'MINT',hex:0x65d5b0},{name:'PURPLE',hex:0xb28df2},{name:'PEACH',hex:0xffa078}
@@ -352,6 +352,7 @@ function makeChallenge(mode) {
     const otherNumbers=shuffle(['2','3','5','7','8','9'].filter(n=>n!==target)).slice(0,3);
     return {mode,prompt:target,hint:'',answer:target,options:shuffle([target,...otherNumbers])};
   }
+  if(mode==='lava') return {mode,prompt:'REACH THE OTHER SIDE',hint:'',answer:'SAFE',options:['SAFE','LAVA']};
   if(mode==='odd') {
     const target=pick(['FISH','BIRD','CAT','DOG']);
     const options=['APPLE','CAR','TREE',target];
@@ -366,7 +367,7 @@ function makeChallenge(mode) {
   const answer=String(start+step*3);
   return {mode,prompt:'Complete the pattern: '+start+', '+(start+step)+', '+(start+2*step)+', ?',hint:'',answer,options:shuffle([answer,String(start+step*2),String(start+step*4),String(start+step*3+1)])};
 }
-const modeNames = {colour:'COLOUR RUSH',math:'MATHS RUN',animal:'ANIMAL KINGDOM',emoji:'EMOJI',word:'WORD CHALLENGE',shape:'SHAPE SHIFTER',memory:'MEMORY RUSH',odd:'ODD ONE OUT',truefalse:'TRUE OR FALSE',pattern:'PATTERN PANIC'};
+const modeNames = {colour:'COLOUR RUSH',math:'MATHS RUN',animal:'ANIMAL KINGDOM',emoji:'EMOJI',word:'WORD CHALLENGE',shape:'SHAPE SHIFTER',memory:'MEMORY RUSH',lava:'FLOOR IS LAVA',odd:'ODD ONE OUT',truefalse:'TRUE OR FALSE',pattern:'PATTERN PANIC'};
 function chooseMode() {
   if(selectedMode==='random') return pick(modes);
   return selectedMode;
@@ -400,6 +401,27 @@ function setupChallenge() {
   $('challenge-hint').textContent='';
   const contrastingText={PINK:'#ff9bb9',BLUE:'#75c9f5',YELLOW:'#ffd45f',MINT:'#78dfbc',PURPLE:'#c0a5ff',PEACH:'#ffad8c'};
   promptEl.style.color=activeMode==='colour'?(contrastingText[challenge.answer]||'#ffffff'):'#ffffff';
+  if(activeMode==='lava'){
+    const safeMaterial=0x65d5b0, lavaMaterial=0xff573d;
+    tileMeshes.forEach(tile=>{
+      // Keep a generous, shifting-safe route through the centre; outer lanes
+      // contain lava so players must steer and jump between moving platforms.
+      const safe=tile.col>=2&&tile.col<=5;
+      tile.value=safe?'SAFE':'LAVA';
+      tile.falling=false; tile.mesh.visible=true; tile.edge.visible=true;
+      tile.x=(tile.col-(GRID-1)/2)*STEP;
+      tile.z=(tile.row-(GRID-1)/2)*STEP;
+      tile.previousX=tile.x;
+      tile.movePhase=(tile.row*1.37+tile.col*2.11)% (Math.PI*2);
+      tile.mesh.position.set(tile.x,0,tile.z);
+      tile.edge.position.set(tile.x,-.15,tile.z);
+      tile.mesh.material.color.setHex(safe?safeMaterial:lavaMaterial);
+      tile.mesh.material.emissive.setHex(safe?0x123c32:0x7d1608);
+      tile.mesh.material.emissiveIntensity=safe?.12:.5;
+      if(tile.label){tile.mesh.remove(tile.label);tile.label.material.map?.dispose();tile.label.material.dispose();tile.label=null;}
+    });
+    return;
+  }
   // Randomly scatter the safe answers across the entire arena; no edge or row is favoured.
   const baseSafeCount=Math.ceil(tileMeshes.length/challenge.options.length);
   const safeCount=Math.max(6,baseSafeCount-Math.floor((round-1)*1.1));
@@ -464,8 +486,41 @@ function updateActorPosition() {
 }
 function nearestTile(x,z) {
   let best=null, dist=Infinity;
-  for(const t of tileMeshes){const d=(t.x-x)**2+(t.z-z)**2;if(d<dist){dist=d;best=t;}}
+  for(const t of tileMeshes){const tx=activeMode==='lava'?t.mesh.position.x:t.x, tz=activeMode==='lava'?t.mesh.position.z:t.z;const d=(tx-x)**2+(tz-z)**2;if(d<dist){dist=d;best=t;}}
   return dist<STEP*STEP*1.8?best:null;
+}
+function platformUnderPlayer(){
+  let best=null,dist=Infinity;
+  for(const t of tileMeshes){
+    const dx=player.x-t.mesh.position.x,dz=player.z-t.mesh.position.z,d=dx*dx+dz*dz;
+    if(d<dist){dist=d;best=t;}
+  }
+  return dist<(TILE*.47)*(TILE*.47)?best:null;
+}
+function updateLavaPlatforms(dt){
+  const now=clock.elapsedTime;
+  for(const tile of tileMeshes){
+    tile.previousX=tile.mesh.position.x;
+    const nextX=tile.x+Math.sin(now*tile.moveSpeed+tile.movePhase)*tile.moveAmp;
+    tile.mesh.position.x=nextX;
+    tile.edge.position.x=nextX;
+    tile.mesh.position.y=.04+Math.sin(now*2.1+tile.movePhase)*.055;
+    tile.edge.position.y=tile.mesh.position.y-.15;
+    if(player.ridingTile===tile&&player.onGround) player.x+=nextX-tile.previousX;
+    if(tile.value==='LAVA'){
+      tile.mesh.material.emissiveIntensity=.38+Math.sin(now*5+tile.movePhase)*.16;
+    }
+  }
+}
+function finishLavaCourse(won){
+  phase='result';
+  $('result-eyebrow').textContent=won?'COURSE COMPLETE':'LAVA! TRY AGAIN';
+  $('result-title').textContent=won?'🏁 YOU MADE IT!':'YOU FELL IN THE LAVA';
+  $('result-copy').textContent=won?'You crossed the moving platforms and reached the other side!':'Watch the moving platforms and try another route across.';
+  $('result-round').textContent=won?'FINISHED':'TRY AGAIN';
+  $('result-alive').textContent=won?'1':'0';
+  $('continue-button').textContent='PLAY AGAIN';
+  $('result-overlay').classList.remove('hidden');
 }
 function chooseTarget() {
   const safe=tileMeshes.filter(t=>t.value===challenge.answer);
@@ -521,9 +576,17 @@ function startRound(first=false) {
     player.mesh.visible=true;
     actors.forEach(a=>{if(a.alive){a.mesh.visible=true;a.x=(Math.random()-.5)*10;a.z=(Math.random()-.5)*10;a.target=null;a.decision=0;}});
   }
-  actors.forEach(a=>{a.speed=(2.0+Math.random()*.65)*(1+(round-1)*.055);});
-  survivors=(player.alive?1:0)+actors.filter(a=>a.alive).length;
-  timeLeft=Math.max(4,7-(round-1)*0.3);
+  if(activeMode==='lava'){
+    player.x=0; player.z=HALF+.3; player.y=0; player.vx=0; player.vz=0; player.vy=0; player.alive=true; player.onGround=true; player.ridingTile=null;
+    player.mesh.visible=true;
+    actors.forEach(a=>{a.alive=false;a.mesh.visible=false;});
+    survivors=1; timeLeft=99;
+    $('challenge-prompt').textContent='REACH THE OTHER SIDE';
+  } else {
+    actors.forEach(a=>{a.speed=(2.0+Math.random()*.65)*(1+(round-1)*.055);});
+    survivors=(player.alive?1:0)+actors.filter(a=>a.alive).length;
+    timeLeft=Math.max(4,7-(round-1)*0.3);
+  }
   const needsPreview=activeMode==='emoji'||activeMode==='memory';
   previewTimer=activeMode==='emoji'?.65:activeMode==='memory'?.85:0;
   phase=needsPreview?'preview':'playing';
@@ -553,6 +616,7 @@ function dropWrongTiles() {
   roundResolveTimer=1.2;
 }
 function resolveRound() {
+  if(activeMode==='lava'){finishLavaCourse(false);return;}
   const championNPC=actors.find(a=>a.alive);
   if(!player.alive||survivors<=1||round>=10){
     phase='result';
@@ -585,12 +649,21 @@ function movePlayer(dt) {
   player.vx=THREE.MathUtils.lerp(player.vx,desiredVX,response);
   player.vz=THREE.MathUtils.lerp(player.vz,desiredVZ,response);
   player.x+=player.vx*dt; player.z+=player.vz*dt;
-  player.x=THREE.MathUtils.clamp(player.x,-HALF-.4,HALF+.4);
-  player.z=THREE.MathUtils.clamp(player.z,-HALF-.4,HALF+.4);
-  if(player.jumpQueued&&player.onGround){player.vy=6.2;player.onGround=false;}
+  const lavaMode=activeMode==='lava';
+  player.x=THREE.MathUtils.clamp(player.x,-HALF-(lavaMode?1.15:.4),HALF+(lavaMode?1.15:.4));
+  player.z=THREE.MathUtils.clamp(player.z,-HALF-(lavaMode?1.45:.4),HALF+(lavaMode?1.45:.4));
+  if(player.jumpQueued&&player.onGround){player.vy=6.2;player.onGround=false;player.ridingTile=null;}
   player.jumpQueued=false;
   player.vy-=15*dt; player.y+=player.vy*dt;
   if(player.y<=0){player.y=0;player.vy=0;player.onGround=true;}
+  if(lavaMode&&player.onGround){
+    const platform=platformUnderPlayer();
+    if(!platform||platform.value!=='SAFE'){
+      player.alive=false;player.mesh.visible=false;player.ridingTile=null;survivors=0;phase='falling';roundResolveTimer=.65;showMessage('LAVA!');updateHUD();return;
+    }
+    player.ridingTile=platform;
+    if(player.z< -HALF-1.05){player.ridingTile=null;finishLavaCourse(true);return;}
+  } else if(lavaMode&&player.y>0) player.ridingTile=null;
   player.mesh.position.set(player.x,player.y,player.z);
   if(len>.05) player.mesh.rotation.y=Math.atan2(x,z);
   animateAvatar(player.mesh,len>.05,performance.now()*.014);
@@ -685,9 +758,12 @@ function animate() {
       showMessage('GO!');
     }
   } else if(phase==='playing'){
-    timeLeft-=dt;
-    movePlayer(dt);directNPCs(dt);updateHUD();
-    if(timeLeft<=0){timeLeft=0;dropWrongTiles();}
+    if(activeMode==='lava') updateLavaPlatforms(dt);
+    timeLeft-=activeMode==='lava'?0:dt;
+    movePlayer(dt);
+    if(activeMode!=='lava') directNPCs(dt);
+    updateHUD();
+    if(activeMode!=='lava'&&timeLeft<=0){timeLeft=0;dropWrongTiles();}
   } else if(phase==='falling'){
     updateFalling(dt);roundResolveTimer-=dt;
     if(roundResolveTimer<=0)resolveRound();
