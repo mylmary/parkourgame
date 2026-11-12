@@ -562,9 +562,9 @@ function showMessage(message) {
   clearTimeout(showMessage.timer); showMessage.timer=setTimeout(()=>el.classList.remove('show'),1500);
 }
 function updateHUD() {
-  $('round-value').textContent=round+' / 10';
+  $('round-value').textContent=activeMode==='lava'?'CROSS':' '+round+' / 10';
   $('alive-value').textContent=survivors;
-  $('timer-value').textContent=Math.max(0,Math.ceil(timeLeft));
+  $('timer-value').textContent=activeMode==='lava'?'∞':Math.max(0,Math.ceil(timeLeft));
 }
 function startRound(first=false) {
   round++;
