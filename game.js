@@ -432,6 +432,9 @@ function setupChallenge() {
     // then mix additional safe tiles randomly among the lava tiles.
     const safeTiles=new Set();
     let routeCol=Math.floor(GRID/2);
+    // The central starting position spans the two middle tiles on this even-width grid.
+    // Keep both of those first tiles safe so the player can begin in the middle.
+    safeTiles.add(tileMeshes.find(t=>t.row===GRID-1&&t.col===routeCol-1));
     for(let row=GRID-1;row>=0;row--){
       safeTiles.add(tileMeshes.find(t=>t.row===row&&t.col===routeCol));
       if(row>0){
@@ -533,7 +536,10 @@ function platformUnderPlayer(){
     const dx=player.x-t.mesh.position.x,dz=player.z-t.mesh.position.z,d=dx*dx+dz*dz;
     if(d<dist){dist=d;best=t;}
   }
-  return dist<(TILE*.47)*(TILE*.47)?best:null;
+  // A slightly wider landing radius lets the centred spawn stand safely
+  // between the two adjacent middle starting tiles.
+  const landingRadius=activeMode==='lava'?TILE*.58:TILE*.47;
+  return dist<landingRadius*landingRadius?best:null;
 }
 function updateLavaPlatforms(dt){
   const now=clock.elapsedTime;
@@ -686,12 +692,10 @@ function startRound(first=false) {
     actors.forEach(a=>{if(a.alive){a.mesh.visible=true;a.x=(Math.random()-.5)*10;a.z=(Math.random()-.5)*10;a.target=null;a.decision=0;}});
   }
   if(activeMode==='lava'){
-    // Spawn on the actual safe starting platform, not in the centre gap
-    // between the two middle columns.
-    const startTile=tileMeshes.find(tile=>tile.row===GRID-1&&tile.value==='SAFE');
-    player.x=startTile?startTile.mesh.position.x:0;
-    player.z=startTile?startTile.mesh.position.z:HALF;
-    player.y=0; player.vx=0; player.vz=0; player.vy=0; player.alive=true; player.onGround=true; player.ridingTile=startTile||null;
+    // Keep the player centred at the starting edge; the two middle
+    // starting tiles are both safe and support this centred position.
+    player.x=0; player.z=HALF+.3;
+    player.y=0; player.vx=0; player.vz=0; player.vy=0; player.alive=true; player.onGround=true; player.ridingTile=null;
     player.mesh.visible=true;
     actors.forEach(a=>{a.alive=false;a.mesh.visible=false;});
     survivors=1; timeLeft=99;
